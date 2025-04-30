@@ -9,6 +9,6 @@ patchesStrategicMerge:
   - patch.yaml
 
 images:
-  - name: dyoun12/solra-backend
+  - name: ghcr.io/fisa4th-final-project/solra-backend
     newTag: prod-placeholder
 
