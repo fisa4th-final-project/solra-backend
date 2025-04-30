@@ -10,4 +10,4 @@ patchesStrategicMerge:
 
 images:
   - name: dyoun12/solra-backend
-    newTag: d584fc825d2f6805a2cbff7a88b617623b2e0f4e
+    newTag: 1162f6fe83c6444ff9480cf3ff4ffe100bcee479
