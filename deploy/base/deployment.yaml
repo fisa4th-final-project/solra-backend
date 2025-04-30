@@ -10,4 +10,5 @@ spec:
       app: solra-backend
   template:
     metadata:
-      labels
+      labels:
+        app: solra-backend
