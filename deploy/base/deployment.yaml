@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: solra-backend
+  namespace: solra
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: solra-backend
+  template:
+    metadata:
+      labels
