@@ -9,5 +9,5 @@ patchesStrategicMerge:
   - patch.yaml
 
 images:
-  - name: dyoun12/solra-backend
+  - name: ghcr.io/fisa4th-final-project/solra-backend
     newTag: d584fc825d2f6805a2cbff7a88b617623b2e0f4e
