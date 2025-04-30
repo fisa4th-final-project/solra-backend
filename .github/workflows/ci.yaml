@@ -17,7 +17,8 @@ jobs:
       - name: Build Spring Boot App to Jar
         run: |
           chmod +x ./app/gradlew
-          ./app/gradlew clean build -x test
+          cd app
+          ./gradlew clean build -x test
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
