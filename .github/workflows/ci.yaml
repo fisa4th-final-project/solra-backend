@@ -8,11 +8,16 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: dyoun12/${{ github.repository }}
+      IMAGE_NAME: ghcr.io/${{ github.repository }}
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
+
+      - name: Build Spring Boot App to Jar
+        run: |
+          chmod +x ./app/gradlew
+          ./app/gradlew clean build -x test
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -45,5 +50,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add "$OVERLAY_PATH"
-          git commit -m "Update image tag for $BRANCH: ${{ github.sha }}"
+          git commit -m "deploy $BRANCH: ${{ github.sha }}"
           git push
