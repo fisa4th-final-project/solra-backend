@@ -12,3 +12,7 @@ spec:
     metadata:
       labels:
         app: solra-backend
+    spec:
+      containers:
+        - name: solra-backend
+          image: ghcr.io/fisa4th-final-project/solra-backend
