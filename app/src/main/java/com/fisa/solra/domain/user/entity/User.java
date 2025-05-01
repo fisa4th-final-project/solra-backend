@@ -1,5 +1,6 @@
 package com.fisa.solra.domain.user.entity;
 
+import com.fisa.solra.domain.organization.entity.Organization;
 import jakarta.persistence.*;
 import lombok.*;
 
