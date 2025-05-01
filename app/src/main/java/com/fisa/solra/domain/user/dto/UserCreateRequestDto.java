@@ -20,9 +20,7 @@ public class UserCreateRequestDto {
     @Email
     private String email;
 
-    @NotNull(message = "조직 ID는 필수입니다.")
     private Long orgId;
 
-    @NotNull(message = "부서 ID는 필수입니다.")
     private Long deptId;
 }

@@ -20,7 +20,7 @@ public class UserController {
 
     @PostMapping
     public ApiResponse<UserResponseDto> createUser(@RequestBody @Valid UserCreateRequestDto request){
-        UserResponseDto created = userService.createUser(request);
-        return ApiResponse.success(created, "사용자 생성 성공");
+        UserResponseDto userResponseDto = userService.createUser(request);
+        return ApiResponse.success(userResponseDto, "사용자 생성 성공");
     }
 }

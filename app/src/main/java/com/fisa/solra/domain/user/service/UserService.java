@@ -32,10 +32,14 @@ public class UserService {
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
 
+        // Null 체크 추가: 조직/부서가 없을 수 있음
+        Long orgId = user.getOrganization() != null ? user.getOrganization().getOrgId() : null;
+        Long deptId = user.getDepartment() != null ? user.getDepartment().getDeptId() : null;
+
         return UserLoginInfo.builder()
                 .userId(user.getUserId())
-                .orgId(user.getOrganization().getOrgId())
-                .deptId(user.getDepartment().getDeptId())
+                .orgId(orgId)
+                .deptId(deptId)
                 .role("USER") // 또는 user.getRole().getRoleName()
                 .build();
     }
@@ -47,11 +51,19 @@ public class UserService {
             throw new BusinessException(ErrorCode.DUPLICATED_LOGIN_ID);
         }
 
-        Organization org = organizationRepository.findById(request.getOrgId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.ORGANIZATION_NOT_FOUND));
+        // 조직 ID가 null이 아닐 경우만 조회, null 허용
+        Organization org = null;
+        if (request.getOrgId() != null) {
+            org = organizationRepository.findById(request.getOrgId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.ORGANIZATION_NOT_FOUND));
+        }
 
-        Department dept = departmentRepository.findById(request.getDeptId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.DEPARTMENT_NOT_FOUND));
+        // 부서 ID가 null이 아닐 경우만 조회, null 허용
+        Department dept = null;
+        if (request.getDeptId() != null) {
+            dept = departmentRepository.findById(request.getDeptId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.DEPARTMENT_NOT_FOUND));
+        }
 
         User user = User.builder()
                 .userLoginId(request.getUserLoginId())
@@ -69,9 +81,27 @@ public class UserService {
                 .userLoginId(user.getUserLoginId())
                 .userName(user.getUserName())
                 .email(user.getEmail())
-                .organizationId(user.getOrganization().getOrgId())
-                .departmentId(user.getDepartment().getDeptId())
+                .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
+                .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
                 .build();
     }
 
+    // 사용자 조회
+    public UserResponseDto getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // 조직과 부서가 null일 수 있으므로 안전하게 추출
+        Long orgId = user.getOrganization() != null ? user.getOrganization().getOrgId() : null;
+        Long deptId = user.getDepartment() != null ? user.getDepartment().getDeptId() : null;
+
+        return UserResponseDto.builder()
+                .userId(user.getUserId())
+                .userLoginId(user.getUserLoginId())
+                .userName(user.getUserName())
+                .email(user.getEmail())
+                .organizationId(orgId)
+                .departmentId(deptId)
+                .build();
+    }
 }
