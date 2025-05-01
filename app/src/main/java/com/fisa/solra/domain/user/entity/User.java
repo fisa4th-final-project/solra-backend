@@ -20,11 +20,11 @@ public class User {
     private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dept_id", nullable = false)
+    @JoinColumn(name = "dept_id")
     private Department department;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "org_id", nullable = false)
+    @JoinColumn(name = "org_id")
     private Organization organization;
 
     @Column(length = 50, nullable = false)
