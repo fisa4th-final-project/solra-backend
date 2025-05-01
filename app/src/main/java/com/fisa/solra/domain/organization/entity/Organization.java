@@ -18,19 +18,16 @@ public class Organization {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orgId;
 
-    @Column(nullable = false)
+    @Column(length = 100, nullable = false)
     private String orgName;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
+    protected void onCreate() { this.createdAt = LocalDateTime.now(); }
 
     @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    protected void onUpdate() { this.updatedAt = LocalDateTime.now(); }
 }
+
