@@ -20,6 +20,7 @@ public enum ErrorCode {
     ORGANIZATION_NOT_FOUND(3001, HttpStatus.NOT_FOUND, "소속된 조직을 찾을 수 없습니다."),
     DUPLICATED_DEPARTMENT_NAME(3002, HttpStatus.BAD_REQUEST, "동일한 이름의 부서가 이미 존재합니다."),
     DEPARTMENT_NOT_FOUND(3003, HttpStatus.NOT_FOUND, "해당 부서를 찾을 수 없습니다."),
+    ORGANIZATION_DELETE_FAILED(3004, HttpStatus.BAD_REQUEST, "조직에 속한 자식 리소스가 있어 삭제할 수 없습니다."),
 
     // ✅ 4000번대: 클러스터
     CLUSTER_NOT_FOUND(4001, HttpStatus.NOT_FOUND, "클러스터를 찾을 수 없습니다."),
