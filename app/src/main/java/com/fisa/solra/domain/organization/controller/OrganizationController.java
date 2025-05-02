@@ -80,5 +80,4 @@ public class OrganizationController {
         return ResponseEntity
                 .ok(ApiResponse.success(null, "조직 삭제 성공"));
     }
-
 }

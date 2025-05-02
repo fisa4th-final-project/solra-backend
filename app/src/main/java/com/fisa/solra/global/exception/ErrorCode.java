@@ -24,6 +24,8 @@ public enum ErrorCode {
     INVALID_INPUT(3005, HttpStatus.BAD_REQUEST, "입력 값이 유효하지 않습니다."),
     DUPLICATED_ORGANIZATION_NAME(3006, HttpStatus.CONFLICT, "동일한 이름의 조직이 이미 존재합니다."),
     ORGANIZATION_CREATE_FAILED(3007, HttpStatus.BAD_REQUEST, "조직 생성에 실패했습니다."),
+    DEPARTMENT_CREATE_FAILED(3008, HttpStatus.BAD_REQUEST, "부서 생성에 실패했습니다."),
+    DEPARTMENT_DELETE_FAILED(3009, HttpStatus.BAD_REQUEST, "부서 삭제에 실패했습니다."),
 
     // ✅ 4000번대: 클러스터
     CLUSTER_NOT_FOUND(4001, HttpStatus.NOT_FOUND, "클러스터를 찾을 수 없습니다."),
