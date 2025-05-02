@@ -47,4 +47,9 @@ public class User {
 
     @PreUpdate
     protected void onUpdate() { this.updatedAt = LocalDateTime.now(); }
+
+    public void updateUserInfo(String name, String email) {
+        this.userName = name;
+        this.email = email;
+    }
 }
