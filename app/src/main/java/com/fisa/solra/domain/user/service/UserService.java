@@ -7,10 +7,12 @@ import com.fisa.solra.domain.organization.repository.OrganizationRepository;
 import com.fisa.solra.domain.user.dto.UserCreateRequestDto;
 import com.fisa.solra.domain.user.dto.UserLoginInfo;
 import com.fisa.solra.domain.user.dto.UserResponseDto;
+import com.fisa.solra.domain.user.dto.UserUpdateRequestDto;
 import com.fisa.solra.domain.user.entity.User;
 import com.fisa.solra.domain.user.repository.UserRepository;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,7 @@ public class UserService {
                 .userId(user.getUserId())
                 .orgId(orgId)
                 .deptId(deptId)
-                .role("USER") // 또는 user.getRole().getRoleName()
+                .role("ROOT") // 또는 user.getRole().getRoleName()
                 .build();
     }
 
@@ -102,6 +104,32 @@ public class UserService {
                 .email(user.getEmail())
                 .organizationId(orgId)
                 .departmentId(deptId)
+                .build();
+    }
+
+    // 사용자 수정
+    @Transactional
+    public UserResponseDto updateUser(Long userId, UserUpdateRequestDto requestDto) {
+        // 사용자 존재 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // 이메일 중복 검사 (자기 자신 제외)
+        boolean emailTaken = userRepository.existsByEmailAndUserIdNot(requestDto.getEmail(), userId);
+        if (emailTaken) {
+            throw new BusinessException(ErrorCode.DUPLICATED_EMAIL);
+        }
+
+        // 필드 업데이트
+        user.updateUserInfo(requestDto.getUserName(), requestDto.getEmail());
+
+        return UserResponseDto.builder()
+                .userId(user.getUserId())
+                .userLoginId(user.getUserLoginId())
+                .userName(user.getUserName())
+                .email(user.getEmail())
+                .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
+                .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
                 .build();
     }
 }
