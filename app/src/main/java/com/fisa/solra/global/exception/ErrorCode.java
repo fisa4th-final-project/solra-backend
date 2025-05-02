@@ -21,6 +21,9 @@ public enum ErrorCode {
     DUPLICATED_DEPARTMENT_NAME(3002, HttpStatus.BAD_REQUEST, "동일한 이름의 부서가 이미 존재합니다."),
     DEPARTMENT_NOT_FOUND(3003, HttpStatus.NOT_FOUND, "해당 부서를 찾을 수 없습니다."),
     ORGANIZATION_DELETE_FAILED(3004, HttpStatus.BAD_REQUEST, "조직에 속한 자식 리소스가 있어 삭제할 수 없습니다."),
+    INVALID_INPUT(3005, HttpStatus.BAD_REQUEST, "입력 값이 유효하지 않습니다."),
+    DUPLICATED_ORGANIZATION_NAME(3006, HttpStatus.CONFLICT, "동일한 이름의 조직이 이미 존재합니다."),
+    ORGANIZATION_CREATE_FAILED(3007, HttpStatus.BAD_REQUEST, "조직 생성에 실패했습니다."),
 
     // ✅ 4000번대: 클러스터
     CLUSTER_NOT_FOUND(4001, HttpStatus.NOT_FOUND, "클러스터를 찾을 수 없습니다."),

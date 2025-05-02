@@ -3,7 +3,11 @@ package com.fisa.solra.domain.organization.controller;
 import com.fisa.solra.domain.organization.dto.OrganizationRequestDto;
 import com.fisa.solra.domain.organization.dto.OrganizationResponseDto;
 import com.fisa.solra.domain.organization.service.OrganizationService;
+import com.fisa.solra.global.exception.BusinessException;
+import com.fisa.solra.global.exception.ErrorCode;
+import com.fisa.solra.global.jwt.JwtTokenProvider;
 import com.fisa.solra.global.response.ApiResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,21 +21,31 @@ import java.util.List;
 public class OrganizationController {
 
     private final OrganizationService organizationService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    // 조직 생성
     @PostMapping
     public ResponseEntity<ApiResponse<OrganizationResponseDto>> createOrganization(
             @RequestBody OrganizationRequestDto requestDto,
-            @RequestHeader("Authorization") String authorizationHeader) {
-        // Authorization: Bearer {token}
-        String token = authorizationHeader.replace("Bearer ", "");
+            HttpSession session
+    ) {
+        // ① 세션에서 JWT 토큰 꺼내기
+        String token = (String) session.getAttribute("jwtToken");
+        if (token == null || !jwtTokenProvider.validateToken(token)) {
+            throw new BusinessException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        // ② 토큰에서 role 추출
         String role = jwtTokenProvider.getRole(token);
+
+        // ③ 조직 생성
         OrganizationResponseDto dto = organizationService.createOrganization(
                 requestDto.getOrgName(), role);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(dto, "조직 생성 성공"));
     }
+
     // 전체 조회
     @GetMapping
     public ResponseEntity<ApiResponse<List<OrganizationResponseDto>>> getAllOrganizations() {
@@ -64,8 +78,7 @@ public class OrganizationController {
             @PathVariable Long orgId) {
         organizationService.deleteOrganization(orgId);
         return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.success(null, "조직 삭제 성공"));
+                .ok(ApiResponse.success(null, "조직 삭제 성공"));
     }
 
 }

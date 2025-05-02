@@ -25,21 +25,45 @@ public class OrganizationService {
     // 조직 생성 (ROOT 권한 필요)
     @Transactional
     public OrganizationResponseDto createOrganization(String orgName, String role) {
+        // 권한 확인
         if (!"ROOT".equals(role)) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
-        Organization org = Organization.builder()
-                .orgName(orgName)
-                .build();
-        Organization saved = organizationRepository.save(org);
-        return OrganizationResponseDto.builder()
-                .orgId(saved.getOrgId())
-                .orgName(saved.getOrgName())
-                .build();
+
+        // 이름 유효성 검증
+        if (orgName == null || orgName.trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+        orgName = orgName.trim();
+
+        // 중복 검사
+        if (organizationRepository.existsByOrgName(orgName)) {
+            throw new BusinessException(ErrorCode.DUPLICATED_ORGANIZATION_NAME);
+        }
+
+        try {
+            Organization org = Organization.builder()
+                    .orgName(orgName)
+                    .build();
+            Organization saved = organizationRepository.save(org);
+            return OrganizationResponseDto.builder()
+                    .orgId(saved.getOrgId())
+                    .orgName(saved.getOrgName())
+                    .build();
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(ErrorCode.ORGANIZATION_CREATE_FAILED);
+        }
     }
     //조직 전체 조회
     public List<OrganizationResponseDto> getAllOrganizations() {
-        return organizationRepository.findAll().stream()
+        // 1) 엔티티 리스트 먼저 조회
+        List<Organization> entities = organizationRepository.findAll();
+        if (entities.isEmpty()) {
+            throw new BusinessException(ErrorCode.ORGANIZATION_NOT_FOUND);
+        }
+
+        // 2) DTO로 변환
+        return entities.stream()
                 .map(org -> OrganizationResponseDto.builder()
                         .orgId(org.getOrgId())
                         .orgName(org.getOrgName())
