@@ -10,6 +10,8 @@ import com.fisa.solra.global.response.ApiResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,6 +41,27 @@ public class UserController {
 
         UserResponseDto userResponseDto = userService.updateUser(userId, request);
         return ApiResponse.success(userResponseDto, "사용자 정보 수정 완료");
+    }
+
+    // 사용자 삭제
+    @DeleteMapping("/{userId}")
+    public ApiResponse<String> deleteUser(@PathVariable Long userId){
+        userService.deleteUser(userId);
+        return ApiResponse.success(null,"사용자 삭제 성공");
+    }
+
+    // 사용자 목록
+    @GetMapping
+    public ApiResponse<Page<UserResponseDto>> getAllUsers(Pageable pageable){
+        Page<UserResponseDto> users = userService.getAllUsers(pageable);
+        return ApiResponse.success(users, "사용자 목록 조회 성공");
+    }
+
+    // 사용자 상세 조회
+    @GetMapping("/{userId}")
+    public ApiResponse<UserResponseDto> getUse(@PathVariable Long userId) {
+        UserResponseDto userResponseDto = userService.getUserById(userId);
+        return ApiResponse.success(userResponseDto, "사용자 상세 조회 성공");
     }
 
 }
