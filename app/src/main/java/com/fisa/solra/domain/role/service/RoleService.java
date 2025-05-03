@@ -62,4 +62,15 @@ public class RoleService {
         }
         return list;
     }
+
+    // 단일 역할 조회
+    public RoleResponseDto getRoleById(Long roleId) {
+        Role entity = roleRepository.findById(roleId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND));
+        return RoleResponseDto.builder()
+                .roleId(entity.getRoleId())
+                .roleName(entity.getRoleName())
+                .description(entity.getDescription())
+                .build();
+    }
 }

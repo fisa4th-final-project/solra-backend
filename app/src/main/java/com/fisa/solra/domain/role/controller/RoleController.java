@@ -35,4 +35,12 @@ public class RoleController {
         List<RoleResponseDto> list = roleService.getAllRoles();
         return ResponseEntity.ok(ApiResponse.success(list, "역할 목록 조회 성공"));
     }
+
+    // 단일 역할 조회
+    @GetMapping("/{roleId}")
+    public ResponseEntity<ApiResponse<RoleResponseDto>> getRole(
+            @PathVariable Long roleId) {
+        RoleResponseDto dto = roleService.getRoleById(roleId);
+        return ResponseEntity.ok(ApiResponse.success(dto, "역할 조회 성공"));
+    }
 }
