@@ -12,10 +12,14 @@ import com.fisa.solra.domain.user.entity.User;
 import com.fisa.solra.domain.user.repository.UserRepository;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
+import com.fisa.solra.global.response.ApiResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 @RequiredArgsConstructor
@@ -140,4 +144,18 @@ public class UserService {
 
         userRepository.delete(user);
     }
+
+    // 사용자 전체 조회
+    public Page<UserResponseDto> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(user -> UserResponseDto.builder()
+                        .userId(user.getUserId())
+                        .userLoginId(user.getUserLoginId())
+                        .userName(user.getUserName())
+                        .email(user.getEmail())
+                        .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
+                        .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
+                        .build());
+    }
+
 }
