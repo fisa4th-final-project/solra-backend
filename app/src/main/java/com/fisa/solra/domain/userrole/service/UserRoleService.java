@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -80,4 +82,24 @@ public class UserRoleService {
                 .build();
     }
 
+    // 사용자 ID로 역할 목록 조회
+    public List<UserRoleResponseDto> getRolesByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        List<UserRole> userRoles = userRoleRepository.findAllByUser(user);
+
+        return userRoles.stream()
+                .map(ur -> {
+                    Role role = ur.getRole();
+                    return UserRoleResponseDto.builder()
+                            .userId(user.getUserId())
+                            .roleId(role.getRoleId())
+                            .roleName(role.getRoleName())
+                            .createdAt(ur.getCreatedAt())
+                            .updatedAt(ur.getUpdatedAt())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
 }

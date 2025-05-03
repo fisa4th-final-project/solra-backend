@@ -7,6 +7,9 @@ import com.fisa.solra.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Path;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/user-roles")
 @RequiredArgsConstructor
@@ -29,6 +32,13 @@ public class UserRoleController {
         return ApiResponse.success(removed, "사용자 역할 해제 성공");
     }
 
+    // 사용자 역할 목록 조회
+    @GetMapping("/{userId}")
+    public ApiResponse<List<UserRoleResponseDto>> getUerRoles(@PathVariable Long userId){
+        List<UserRoleResponseDto> userRoles = userRoleService.getRolesByUserId(userId);
+        return ApiResponse.success(userRoles, "사용자 역할 목록 조회 성공");
+
+    }
 
 
 }
