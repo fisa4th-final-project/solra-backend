@@ -132,4 +132,12 @@ public class UserService {
                 .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
                 .build();
     }
+
+    // 사용자 삭제
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        userRepository.delete(user);
+    }
 }

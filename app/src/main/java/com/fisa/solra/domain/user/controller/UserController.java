@@ -41,4 +41,11 @@ public class UserController {
         return ApiResponse.success(userResponseDto, "사용자 정보 수정 완료");
     }
 
+    // 사용자 삭제
+    @DeleteMapping("/{userId}")
+    public ApiResponse<String> deleteUser(@PathVariable Long userId){
+        userService.deleteUser(userId);
+        return ApiResponse.success(null,"사용자 삭제 성공");
+    }
+
 }
