@@ -73,4 +73,24 @@ public class RoleService {
                 .description(entity.getDescription())
                 .build();
     }
+
+    // 역할 수정 (부분 업데이트 지원)
+    @Transactional
+    public RoleResponseDto updateRole(Long roleId, RoleRequestDto updateDto) {
+        Role entity = roleRepository.findById(roleId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND));
+
+        // description 변경
+        if (updateDto.getDescription() != null) {
+            entity.setDescription(updateDto.getDescription());
+        }
+
+        roleRepository.flush();
+
+        return RoleResponseDto.builder()
+                .roleId(entity.getRoleId())
+                .roleName(entity.getRoleName())
+                .description(entity.getDescription())
+                .build();
+    }
 }

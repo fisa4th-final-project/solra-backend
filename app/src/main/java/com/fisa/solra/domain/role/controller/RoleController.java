@@ -43,4 +43,15 @@ public class RoleController {
         RoleResponseDto dto = roleService.getRoleById(roleId);
         return ResponseEntity.ok(ApiResponse.success(dto, "역할 조회 성공"));
     }
+
+    // 역할 수정
+    // 역할 수정 (설명만)
+    @PatchMapping("/{roleId}")
+    public ResponseEntity<ApiResponse<RoleResponseDto>> updateRole(
+            @PathVariable Long roleId,
+            @RequestBody RoleRequestDto requestDto) {
+        RoleResponseDto dto = roleService.updateRole(roleId, requestDto);
+        return ResponseEntity.ok(ApiResponse.success(dto, "역할 설명 수정 성공"));
+    }
+
 }
