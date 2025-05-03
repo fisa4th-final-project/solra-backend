@@ -57,4 +57,11 @@ public class UserController {
         return ApiResponse.success(users, "사용자 목록 조회 성공");
     }
 
+    // 사용자 상세 조회
+    @GetMapping("/{userId}")
+    public ApiResponse<UserResponseDto> getUse(@PathVariable Long userId) {
+        UserResponseDto userResponseDto = userService.getUserById(userId);
+        return ApiResponse.success(userResponseDto, "사용자 상세 조회 성공");
+    }
+
 }
