@@ -12,6 +12,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class PermissionService {
@@ -51,5 +54,20 @@ public class PermissionService {
             // DB 제약 위반 시
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    //권한 전체 조회
+    public List<PermissionResponseDto> getAllPermissions() {
+        List<PermissionResponseDto> list = permissionRepository.findAll().stream()
+                .map(p -> PermissionResponseDto.builder()
+                        .permissionId(p.getPermissionId())
+                        .permissionName(p.getPermissionName())
+                        .description(p.getDescription())
+                        .build())
+                .collect(Collectors.toList());
+        if (list.isEmpty()) {
+            throw new BusinessException(ErrorCode.PERMISSION_NOT_FOUND);
+        }
+        return list;
     }
 }

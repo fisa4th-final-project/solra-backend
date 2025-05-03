@@ -9,12 +9,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/permissions")
 @RequiredArgsConstructor
 public class PermissionController {
 
     private final PermissionService permissionService;
+
+    //권한 생성
     @PostMapping
     public ResponseEntity<ApiResponse<PermissionResponseDto>> createPermission(
             @RequestBody PermissionRequestDto requestDto) {
@@ -22,5 +26,12 @@ public class PermissionController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(dto, "권한 생성 성공"));
+    }
+
+    //권한 전체 조회
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<PermissionResponseDto>>> getPermissions() {
+        List<PermissionResponseDto> list = permissionService.getAllPermissions();
+        return ResponseEntity.ok(ApiResponse.success(list, "권한 목록 조회 성공"));
     }
 }
