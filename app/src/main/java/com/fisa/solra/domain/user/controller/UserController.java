@@ -30,7 +30,6 @@ public class UserController {
     }
 
     // 사용자 정보 수정
-    @PreAuthorize("@permissionService.hasPermission('USER_CREATE')")
     @PatchMapping("/{userId}")
     public ApiResponse<UserResponseDto> updateUser(
             @PathVariable Long userId,
