@@ -35,11 +35,20 @@ public class PermissionController {
         return ResponseEntity.ok(ApiResponse.success(list, "권한 목록 조회 성공"));
     }
 
+    //권한 설명 수정
     @PatchMapping("/{permissionId}")
     public ResponseEntity<ApiResponse<PermissionResponseDto>> updatePermission(
             @PathVariable Long permissionId,
             @RequestBody PermissionRequestDto requestDto) {
         PermissionResponseDto dto = permissionService.updatePermission(permissionId, requestDto);
         return ResponseEntity.ok(ApiResponse.success(dto, "권한 설명 수정 성공"));
+    }
+
+    //권한 삭제
+    @DeleteMapping("/{permissionId}")
+    public ResponseEntity<ApiResponse<Void>> deletePermission(
+            @PathVariable Long permissionId) {
+        permissionService.deletePermission(permissionId);
+        return ResponseEntity.ok(ApiResponse.success(null, "권한 삭제 성공"));
     }
 }

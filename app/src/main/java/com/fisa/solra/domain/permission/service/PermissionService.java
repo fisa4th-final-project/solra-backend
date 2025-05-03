@@ -71,6 +71,7 @@ public class PermissionService {
         return list;
     }
 
+    //권한 설명 수정
     @Transactional
     public PermissionResponseDto updatePermission(Long permissionId, PermissionRequestDto requestDto) {
         Permission entity = permissionRepository.findById(permissionId)
@@ -89,4 +90,19 @@ public class PermissionService {
                 .description(entity.getDescription())
                 .build();
     }
+
+    //권한 삭제
+    @Transactional
+    public void deletePermission(Long permissionId) {
+        if (!permissionRepository.existsById(permissionId)) {
+            throw new BusinessException(ErrorCode.PERMISSION_NOT_FOUND);
+        }
+        try {
+            permissionRepository.deleteById(permissionId);
+            permissionRepository.flush();
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            throw new BusinessException(ErrorCode.PERMISSION_DELETE_FAILED);
+        }
+    }
 }
+
