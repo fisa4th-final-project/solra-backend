@@ -7,9 +7,11 @@ import com.fisa.solra.domain.user.service.UserService;
 import com.fisa.solra.global.auth.AuthUtil;
 import com.fisa.solra.global.jwt.JwtTokenProvider;
 import com.fisa.solra.global.response.ApiResponse;
+import jakarta.persistence.PrePersist;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,6 +30,7 @@ public class UserController {
     }
 
     // 사용자 정보 수정
+    @PreAuthorize("@permissionService.hasPermission('USER_CREATE')")
     @PatchMapping("/{userId}")
     public ApiResponse<UserResponseDto> updateUser(
             @PathVariable Long userId,
