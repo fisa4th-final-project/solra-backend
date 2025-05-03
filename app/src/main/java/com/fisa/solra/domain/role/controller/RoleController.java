@@ -54,4 +54,11 @@ public class RoleController {
         return ResponseEntity.ok(ApiResponse.success(dto, "역할 설명 수정 성공"));
     }
 
+    // 역할 삭제
+    @DeleteMapping("/{roleId}")
+    public ResponseEntity<ApiResponse<Void>> deleteRole(
+            @PathVariable Long roleId) {
+        roleService.deleteRole(roleId);
+        return ResponseEntity.ok(ApiResponse.success(null, "역할 삭제 성공"));
+    }
 }

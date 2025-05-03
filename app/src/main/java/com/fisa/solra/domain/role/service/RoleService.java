@@ -93,4 +93,13 @@ public class RoleService {
                 .description(entity.getDescription())
                 .build();
     }
+
+    // 역할 삭제
+    @Transactional
+    public void deleteRole(Long roleId) {
+        if (!roleRepository.existsById(roleId)) {
+            throw new BusinessException(ErrorCode.ROLE_NOT_FOUND);
+        }
+        roleRepository.deleteById(roleId);
+    }
 }
