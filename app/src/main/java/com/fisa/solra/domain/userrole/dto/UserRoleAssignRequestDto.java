@@ -4,10 +4,8 @@ import lombok.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class UserRoleRequestDto {
+public class UserRoleAssignRequestDto {
     private Long userId;
     private Long roleId;
 }
