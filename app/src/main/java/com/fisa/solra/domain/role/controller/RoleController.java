@@ -28,4 +28,11 @@ public class RoleController {
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(dto, "역할 생성 성공"));
     }
+
+    // 전체 역할 조회
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<RoleResponseDto>>> getRoles() {
+        List<RoleResponseDto> list = roleService.getAllRoles();
+        return ResponseEntity.ok(ApiResponse.success(list, "역할 목록 조회 성공"));
+    }
 }

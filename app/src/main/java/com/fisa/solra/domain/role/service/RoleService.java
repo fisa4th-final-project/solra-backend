@@ -47,6 +47,7 @@ public class RoleService {
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
+
     // 전체 역할 조회
     public List<RoleResponseDto> getAllRoles() {
         List<RoleResponseDto> list = roleRepository.findAll().stream()
