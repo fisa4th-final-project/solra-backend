@@ -34,4 +34,12 @@ public class PermissionController {
         List<PermissionResponseDto> list = permissionService.getAllPermissions();
         return ResponseEntity.ok(ApiResponse.success(list, "권한 목록 조회 성공"));
     }
+
+    @PatchMapping("/{permissionId}")
+    public ResponseEntity<ApiResponse<PermissionResponseDto>> updatePermission(
+            @PathVariable Long permissionId,
+            @RequestBody PermissionRequestDto requestDto) {
+        PermissionResponseDto dto = permissionService.updatePermission(permissionId, requestDto);
+        return ResponseEntity.ok(ApiResponse.success(dto, "권한 설명 수정 성공"));
+    }
 }

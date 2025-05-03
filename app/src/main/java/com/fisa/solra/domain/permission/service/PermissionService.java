@@ -70,4 +70,23 @@ public class PermissionService {
         }
         return list;
     }
+
+    @Transactional
+    public PermissionResponseDto updatePermission(Long permissionId, PermissionRequestDto requestDto) {
+        Permission entity = permissionRepository.findById(permissionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERMISSION_NOT_FOUND));
+
+        String newDesc = requestDto.getDescription();
+        //입력 유효성 검사
+        if (newDesc == null || newDesc.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+        entity.setDescription(newDesc);
+
+        return PermissionResponseDto.builder()
+                .permissionId(entity.getPermissionId())
+                .permissionName(entity.getPermissionName())
+                .description(entity.getDescription())
+                .build();
+    }
 }
