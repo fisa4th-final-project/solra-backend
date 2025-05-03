@@ -5,7 +5,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class UserRoleAssignRequestDto {
+public class UserRoleRequestDto {
     private Long userId;
     private Long roleId;
 }

@@ -5,6 +5,7 @@ import com.fisa.solra.domain.role.repository.RoleRepository;
 import com.fisa.solra.domain.user.dto.UserResponseDto;
 import com.fisa.solra.domain.user.entity.User;
 import com.fisa.solra.domain.user.repository.UserRepository;
+import com.fisa.solra.domain.userrole.dto.UserRoleRequestDto;
 import com.fisa.solra.domain.userrole.dto.UserRoleResponseDto;
 import com.fisa.solra.domain.userrole.entity.UserRole;
 import com.fisa.solra.domain.userrole.repository.UserRoleRepository;
@@ -55,4 +56,28 @@ public class UserRoleService {
                 .updatedAt(userRole.getUpdatedAt())
                 .build();
     }
+
+    // 사용자 역할 해제 서비스 로직
+    @Transactional
+    public UserRoleResponseDto removeUserRole(UserRoleRequestDto requestDto) {
+        User user = userRepository.findById(requestDto.getUserId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        Role role = roleRepository.findById(requestDto.getRoleId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND));
+
+        UserRole userRole = userRoleRepository.findByUserAndRole(user, role)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND)); // or ROLE_NOT_ASSIGNED
+
+        userRoleRepository.delete(userRole);
+
+        return UserRoleResponseDto.builder()
+                .userId(user.getUserId())
+                .roleId(role.getRoleId())
+                .roleName(role.getRoleName())
+                .createdAt(userRole.getCreatedAt())
+                .updatedAt(userRole.getUpdatedAt())
+                .build();
+    }
+
 }
