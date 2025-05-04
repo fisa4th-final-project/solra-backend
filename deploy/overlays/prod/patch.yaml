@@ -11,7 +11,5 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: prod
           envFrom:
-            - configMapRef:
-                name: solra-config
             - secretRef:
                 name: prod-secret
