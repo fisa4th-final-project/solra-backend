@@ -26,4 +26,11 @@ public class UserPermissionController {
         return ApiResponse.success(userPermissionResponseDto, "사용자에게 권한이 성공적으로 부여되었습니다.");
     }
 
+    // 사용자 권한 목록 조회
+    @GetMapping("/{userId}")
+    public ApiResponse<List<PermissionResponseDto>> getUserPermissions(@PathVariable Long userId) {
+        List<PermissionResponseDto> response = userPermissionService.getUserPermissions(userId);
+        return ApiResponse.success(response, "사용자 권한 조회 성공");
+    }
+
 }

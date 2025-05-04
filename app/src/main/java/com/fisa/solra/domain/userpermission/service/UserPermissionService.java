@@ -11,9 +11,9 @@ import com.fisa.solra.domain.userpermission.entity.UserPermission;
 import com.fisa.solra.domain.userpermission.repository.UserPermissionRepository;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,6 +50,23 @@ public class UserPermissionService {
         userPermissionRepository.save(userPermission);
 
         return new UserPermissionResponseDto(user.getUserId(), permission.getPermissionId());
+    }
+
+    // 사용자 권한 목록 조회
+    @Transactional(readOnly = true)
+    public List<PermissionResponseDto> getUserPermissions(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        List<UserPermission> userPermissions = userPermissionRepository.findAllByUser(user);
+
+        return userPermissions.stream()
+                .map(up -> new PermissionResponseDto(
+                        up.getPermission().getPermissionId(),
+                        up.getPermission().getPermissionName(),
+                        up.getPermission().getDescription()
+                ))
+                .toList();
     }
 
 }
