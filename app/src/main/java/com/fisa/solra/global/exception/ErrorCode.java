@@ -15,6 +15,10 @@ public enum ErrorCode {
     DUPLICATED_LOGIN_ID(2001, HttpStatus.BAD_REQUEST, "이미 존재하는 로그인 ID입니다."),
     DUPLICATED_EMAIL(2002, HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
     USER_NOT_FOUND(2003, HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
+    USER_ALREADY_HAS_PERMISSION(2004, HttpStatus.BAD_REQUEST, "해당 권한은 이미 사용자에게 부여되어 있습니다."),
+    USER_PERMISSION_NOT_FOUND(2005, HttpStatus.NOT_FOUND, "사용자에게 해당 권한이 존재하지 않습니다."),
+
+
 
     // ✅ 3000번대: 조직 / 부서
     ORGANIZATION_NOT_FOUND(3001, HttpStatus.NOT_FOUND, "소속된 조직을 찾을 수 없습니다."),
