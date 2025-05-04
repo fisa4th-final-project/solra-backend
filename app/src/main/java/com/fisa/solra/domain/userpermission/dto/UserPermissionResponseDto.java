@@ -10,5 +10,4 @@ import lombok.*;
 public class UserPermissionResponseDto {
     private Long userId;
     private Long permissionId;
-    private Long userPermissionId;
 }
