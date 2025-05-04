@@ -69,4 +69,25 @@ public class UserPermissionService {
                 .toList();
     }
 
+    // 사용자 권한 제거
+    @Transactional
+    public UserPermissionResponseDto removePermission(UserPermissionRequestDto requestDto) {
+        Long userId = requestDto.getUserId();
+        Long permissionId = requestDto.getPermissionId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        Permission permission = permissionRepository.findById(permissionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERMISSION_NOT_FOUND));
+
+        // 사용자에게 없는 권한
+        UserPermission userPermission = userPermissionRepository.findByUserAndPermission(user, permission)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_PERMISSION_NOT_FOUND));
+
+        userPermissionRepository.delete(userPermission);
+
+        return new UserPermissionResponseDto(userId, permissionId);
+    }
+
 }

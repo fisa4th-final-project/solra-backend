@@ -33,4 +33,11 @@ public class UserPermissionController {
         return ApiResponse.success(response, "사용자 권한 조회 성공");
     }
 
+    // 사용자 권한 제거
+    @DeleteMapping
+    public ApiResponse<UserPermissionResponseDto> removePermission(@RequestBody UserPermissionRequestDto requestDto) {
+        UserPermissionResponseDto response = userPermissionService.removePermission(requestDto);
+        return ApiResponse.success(response, "사용자의 권한이 성공적으로 제거되었습니다.");
+    }
+
 }
