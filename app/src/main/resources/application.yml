@@ -3,9 +3,9 @@ spring:
         name: solra
 
     datasource:
-        url: ${DB_URL}
-        username: ${DB_USERNAME}
-        password: ${DB_PASSWORD}
+        url: ${SPRING_DB_URL}
+        username: ${SPRING_DB_USERNAME}
+        password: ${SPRING_DB_PASSWORD}
         driver-class-name: com.mysql.cj.jdbc.Driver
 
     jpa:
@@ -16,8 +16,8 @@ spring:
             hibernate.format_sql: true
 
 jwt:
-    secret: ${JWT_SECRET}
-    expiration: ${JWT_EXPIRATION}
+    secret: ${SPRING_JWT_SECRET}
+    expiration: ${SPRING_JWT_EXPIRATION}
 
 server:
     port: 8080
