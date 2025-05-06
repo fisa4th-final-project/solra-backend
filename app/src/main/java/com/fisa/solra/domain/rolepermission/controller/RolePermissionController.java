@@ -36,4 +36,12 @@ public class RolePermissionController {
         List<PermissionResponseDto> list = rolePermissionService.getPermissionsByRole(roleId);
         return ResponseEntity.ok(ApiResponse.success(list, "역할 권한 목록 조회 성공"));
     }
+
+    //역할에서 권한 제거
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> removePermission(
+            @RequestBody RolePermissionRequestDto requestDto) {
+        rolePermissionService.removePermission(requestDto);
+        return ResponseEntity.ok(ApiResponse.success(null, "역할에서 권한 제거 성공"));
+    }
 }

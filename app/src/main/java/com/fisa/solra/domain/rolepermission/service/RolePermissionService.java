@@ -73,4 +73,20 @@ public class RolePermissionService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    //특정 역할에 부여된 권한 삭제
+    @Transactional
+    public void removePermission(RolePermissionRequestDto req) {
+        Long roleId = req.getRoleId();
+        Long permId = req.getPermissionId();
+
+        // 매핑 존재 확인
+        if (!rolePermissionRepository.existsByRoleRoleIdAndPermissionPermissionId(roleId, permId)) {
+            throw new BusinessException(ErrorCode.ROLE_PERMISSION_NOT_FOUND);
+        }
+
+        // join테이블 레코드 삭제
+        rolePermissionRepository.deleteByRoleRoleIdAndPermissionPermissionId(roleId, permId);
+        rolePermissionRepository.flush();
+    }
 }

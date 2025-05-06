@@ -42,6 +42,9 @@ public enum ErrorCode {
     ROLE_ALREADY_ASSIGNED(5003, HttpStatus.CONFLICT, "해당 역할은 이미 사용자에게 부여되어 있습니다."),
     ROLE_NOT_FOUND(5004, HttpStatus.NOT_FOUND, "요청한 역할이 존재하지 않습니다."),
     PERMISSION_DELETE_FAILED(5005, HttpStatus.BAD_REQUEST, "권한 삭제에 실패했습니다."),
+    ROLE_PERMISSION_NOT_FOUND(5006, HttpStatus.CONFLICT, "역할 권한 매핑을 찾을 수 없습니다."),
+
+
     // ✅ 9000번대: 시스템
     INTERNAL_SERVER_ERROR(9000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
     UNKNOWN_EXCEPTION(9001, HttpStatus.INTERNAL_SERVER_ERROR, "처리 중 알 수 없는 예외가 발생했습니다.");
