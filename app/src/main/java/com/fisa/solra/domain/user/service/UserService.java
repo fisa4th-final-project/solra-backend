@@ -118,6 +118,13 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        // userLoginId 중복 검사 (현재 user 제외)
+        if (requestDto.getUserLoginId() != null &&
+                !requestDto.getUserLoginId().equals(user.getUserLoginId()) &&
+                userRepository.existsByUserLoginId(requestDto.getUserLoginId())) {
+            throw new BusinessException(ErrorCode.USER_LOGIN_ID_DUPLICATED);
+        }
+
         // 이메일 중복 검사 (자기 자신 제외)
         boolean emailTaken = userRepository.existsByEmailAndUserIdNot(requestDto.getEmail(), userId);
         if (emailTaken) {
@@ -125,7 +132,7 @@ public class UserService {
         }
 
         // 필드 업데이트
-        user.updateUserInfo(requestDto.getUserName(), requestDto.getEmail());
+        user.updateUserInfo(requestDto.getUserLoginId(), requestDto.getUserName(), requestDto.getEmail(), passwordEncoder.encode(requestDto.getPassword()));
 
         return UserResponseDto.builder()
                 .userId(user.getUserId())
