@@ -48,6 +48,7 @@ public enum ErrorCode {
     ROLE_NOT_FOUND(5004, HttpStatus.NOT_FOUND, "요청한 역할이 존재하지 않습니다."),
     PERMISSION_DELETE_FAILED(5005, HttpStatus.BAD_REQUEST, "권한 삭제에 실패했습니다."),
     ROLE_PERMISSION_NOT_FOUND(5006, HttpStatus.CONFLICT, "역할 권한 매핑을 찾을 수 없습니다."),
+    PERMISSION_ALREADY_ASSIGNED(5007, HttpStatus.CONFLICT, "해당 권한은 이미 사용자에게 부여되어 있습니다."),
 
     // ✅ 역할 / 권한 삭제 충돌 (FK 제약 조건 위반)
     ROLE_DELETE_CONFLICT(5100, HttpStatus.CONFLICT, "해당 역할은 사용자 또는 권한과 연결되어 있어 삭제할 수 없습니다."),
