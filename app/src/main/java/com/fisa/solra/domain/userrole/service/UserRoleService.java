@@ -44,8 +44,6 @@ public class UserRoleService {
         UserRole userRole = UserRole.builder()
                 .user(user)
                 .role(role)
-                .createdAt(now)
-                .updatedAt(now)
                 .build();
 
         userRoleRepository.save(userRole);
@@ -54,8 +52,6 @@ public class UserRoleService {
                 .userId(user.getUserId())
                 .roleId(role.getRoleId())
                 .roleName(role.getRoleName())
-                .createdAt(userRole.getCreatedAt())
-                .updatedAt(userRole.getUpdatedAt())
                 .build();
     }
 
@@ -77,8 +73,6 @@ public class UserRoleService {
                 .userId(user.getUserId())
                 .roleId(role.getRoleId())
                 .roleName(role.getRoleName())
-                .createdAt(userRole.getCreatedAt())
-                .updatedAt(userRole.getUpdatedAt())
                 .build();
     }
 
@@ -96,8 +90,6 @@ public class UserRoleService {
                             .userId(user.getUserId())
                             .roleId(role.getRoleId())
                             .roleName(role.getRoleName())
-                            .createdAt(ur.getCreatedAt())
-                            .updatedAt(ur.getUpdatedAt())
                             .build();
                 })
                 .collect(Collectors.toList());

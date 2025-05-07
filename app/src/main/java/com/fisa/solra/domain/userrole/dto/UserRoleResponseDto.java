@@ -13,6 +13,4 @@ public class UserRoleResponseDto {
     private Long userId;
     private Long roleId;
     private String roleName;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
