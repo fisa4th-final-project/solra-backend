@@ -46,7 +46,7 @@ public class UserService {
                 .userId(user.getUserId())
                 .orgId(orgId)
                 .deptId(deptId)
-                .role("ROOT") // 또는 user.getRole().getRoleName()
+                .roles(user.getRoles()) // 또는 user.getRole().getRoleName()
                 .build();
     }
 

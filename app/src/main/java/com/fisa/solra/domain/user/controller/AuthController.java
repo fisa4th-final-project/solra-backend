@@ -37,7 +37,7 @@ public class AuthController {
                 loginInfo.getUserId(),
                 loginInfo.getOrgId(),
                 loginInfo.getDeptId(),
-                loginInfo.getRole()
+                loginInfo.getRoles().toString()
         );
 
         // 세션에 저장
