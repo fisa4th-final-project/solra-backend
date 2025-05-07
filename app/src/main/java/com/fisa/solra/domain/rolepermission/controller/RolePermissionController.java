@@ -30,7 +30,7 @@ public class RolePermissionController {
     }
 
     //특정 역할에 부여된 권한 조회
-    @GetMapping("/{roleId}/permissions")
+    @GetMapping("/{roleId}")
     public ResponseEntity<ApiResponse<List<PermissionResponseDto>>> getRolePermissions(
             @PathVariable Long roleId) {
         List<PermissionResponseDto> list = rolePermissionService.getPermissionsByRole(roleId);
