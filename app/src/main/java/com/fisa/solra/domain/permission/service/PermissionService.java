@@ -97,12 +97,8 @@ public class PermissionService {
         if (!permissionRepository.existsById(permissionId)) {
             throw new BusinessException(ErrorCode.PERMISSION_NOT_FOUND);
         }
-        try {
             permissionRepository.deleteById(permissionId);
             permissionRepository.flush();
-        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
-            throw new BusinessException(ErrorCode.PERMISSION_DELETE_FAILED);
-        }
     }
 }
 

@@ -101,5 +101,6 @@ public class RoleService {
             throw new BusinessException(ErrorCode.ROLE_NOT_FOUND);
         }
         roleRepository.deleteById(roleId);
+        roleRepository.flush();
     }
 }

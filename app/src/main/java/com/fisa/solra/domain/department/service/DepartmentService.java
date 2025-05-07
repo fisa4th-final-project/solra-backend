@@ -119,11 +119,7 @@ public class DepartmentService {
         if (!departmentRepository.existsById(deptId)) {
             throw new BusinessException(ErrorCode.DEPARTMENT_NOT_FOUND);
         }
-        try {
-            departmentRepository.deleteById(deptId);
-            departmentRepository.flush();
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException(ErrorCode.DEPARTMENT_DELETE_FAILED);
-        }
+        departmentRepository.deleteById(deptId);
+        departmentRepository.flush();
     }
 }

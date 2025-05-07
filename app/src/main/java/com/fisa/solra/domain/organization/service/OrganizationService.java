@@ -95,11 +95,7 @@ public class OrganizationService {
         if (!organizationRepository.existsById(orgId)) {
             throw new BusinessException(ErrorCode.ORGANIZATION_NOT_FOUND);
         }
-        try {
-            organizationRepository.deleteById(orgId);
-            organizationRepository.flush();
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException(ErrorCode.ORGANIZATION_DELETE_FAILED);
-        }
+        organizationRepository.deleteById(orgId);
+        organizationRepository.flush();
     }
 }

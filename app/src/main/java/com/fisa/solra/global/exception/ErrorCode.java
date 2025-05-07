@@ -32,6 +32,10 @@ public enum ErrorCode {
     DEPARTMENT_CREATE_FAILED(3008, HttpStatus.BAD_REQUEST, "부서 생성에 실패했습니다."),
     DEPARTMENT_DELETE_FAILED(3009, HttpStatus.BAD_REQUEST, "부서 삭제에 실패했습니다."),
 
+    // ✅ 조직 / 부서 삭제 충돌 (FK 제약 조건 위반)
+    ORGANIZATION_DELETE_CONFLICT(3100, HttpStatus.CONFLICT, "해당 조직은 부서 또는 사용자와 연결되어 있어 삭제할 수 없습니다."),
+    DEPARTMENT_DELETE_CONFLICT(3200, HttpStatus.CONFLICT, "해당 부서는 사용자와 연결되어 있어 삭제할 수 없습니다."),
+
     // ✅ 4000번대: 클러스터
     CLUSTER_NOT_FOUND(4001, HttpStatus.NOT_FOUND, "클러스터를 찾을 수 없습니다."),
     CLUSTER_CREATION_FAILED(4002, HttpStatus.BAD_REQUEST, "클러스터 생성에 실패했습니다."),
@@ -45,6 +49,9 @@ public enum ErrorCode {
     PERMISSION_DELETE_FAILED(5005, HttpStatus.BAD_REQUEST, "권한 삭제에 실패했습니다."),
     ROLE_PERMISSION_NOT_FOUND(5006, HttpStatus.CONFLICT, "역할 권한 매핑을 찾을 수 없습니다."),
 
+    // ✅ 역할 / 권한 삭제 충돌 (FK 제약 조건 위반)
+    ROLE_DELETE_CONFLICT(5100, HttpStatus.CONFLICT, "해당 역할은 사용자 또는 권한과 연결되어 있어 삭제할 수 없습니다."),
+    PERMISSION_DELETE_CONFLICT(5101, HttpStatus.CONFLICT, "해당 권한은 사용자 또는 역할과 연결되어 있어 삭제할 수 없습니다."),
 
     // ✅ 9000번대: 시스템
     INTERNAL_SERVER_ERROR(9000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
