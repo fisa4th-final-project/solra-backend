@@ -74,15 +74,26 @@ public class PermissionService {
     //권한 설명 수정
     @Transactional
     public PermissionResponseDto updatePermission(Long permissionId, PermissionRequestDto requestDto) {
+        // 1) 존재 확인
         Permission entity = permissionRepository.findById(permissionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PERMISSION_NOT_FOUND));
 
+        // 2) 입력 검증
         String newDesc = requestDto.getDescription();
-        //입력 유효성 검사
         if (newDesc == null || newDesc.isBlank()) {
             throw new BusinessException(ErrorCode.INVALID_INPUT);
         }
+        newDesc = newDesc.trim();
+
+        // 3) 변경된 설명인지 확인
+        if (newDesc.equals(entity.getDescription())) {
+            // 같은 설명이면 예외
+            throw new BusinessException(ErrorCode.PERMISSION_ALREADY_ASSIGNED);
+        }
+
+        // 4) 업데이트
         entity.setDescription(newDesc);
+        // @PreUpdate에 의해 updatedAt이 자동 갱신됩니다
 
         return PermissionResponseDto.builder()
                 .permissionId(entity.getPermissionId())
