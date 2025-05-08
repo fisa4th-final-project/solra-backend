@@ -9,5 +9,5 @@ resources:
 secretGenerator:
   - name: solra-secret
     envs:
-      - /home/ubuntu/env/solra-secret.env
+      - /home/ubuntu/env/solra-backend-secret.env
     type: Opaque
