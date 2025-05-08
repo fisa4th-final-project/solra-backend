@@ -4,9 +4,3 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
-
-secretGenerator:
-  - name: solra-backend-secret
-    envs:
-      - /home/ubuntu/env/solra-backend-secret.env
-    type: Opaque
