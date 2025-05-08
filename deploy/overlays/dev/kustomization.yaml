@@ -10,5 +10,5 @@ patchesStrategicMerge:
 
 images:
   - name: ghcr.io/fisa4th-final-project/solra-backend
-    newTag: 5d21b6d8c05809c4cb3a563784d1aef948e267cc
+    newTag: 9f17ebaafcb8ceef32ed21a58add0ee0f9e8b204
 
