@@ -64,4 +64,16 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.fail(error.getStatus().value(), overrideMessage, error.getCode()));
     }
 
+    @ExceptionHandler(io.fabric8.kubernetes.client.KubernetesClientException.class)
+    public ResponseEntity<ApiResponse<Void>> handleK8sConnectionError(io.fabric8.kubernetes.client.KubernetesClientException e) {
+        log.error("Kubernetes API 연결 오류", e);
+        ErrorCode error = ErrorCode.CLUSTER_CONNECTION_FAILED;
+        return ResponseEntity
+                .status(error.getStatus())
+                .body(ApiResponse.fail(
+                        error.getStatus().value(),
+                        error.getMessage(),
+                        error.getCode()
+                ));
+    }
 }
