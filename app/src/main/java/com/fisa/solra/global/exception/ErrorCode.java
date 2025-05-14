@@ -40,6 +40,36 @@ public enum ErrorCode {
     CLUSTER_NOT_FOUND(4001, HttpStatus.NOT_FOUND, "클러스터를 찾을 수 없습니다."),
     CLUSTER_CREATION_FAILED(4002, HttpStatus.BAD_REQUEST, "클러스터 생성에 실패했습니다."),
     DUPLICATED_CLUSTER_NAME(4003, HttpStatus.CONFLICT, "동일한 이름의 클러스터가 이미 존재합니다."),
+    CLUSTER_CONNECTION_FAILED(4004, HttpStatus.SERVICE_UNAVAILABLE, "Kubernetes API 연결에 실패했습니다."),
+
+    // ✅ 4100번대: 노드 관련
+    NODE_NOT_FOUND(4101, HttpStatus.NOT_FOUND, "해당 노드를 찾을 수 없습니다."),
+
+    //✅ 4200번대: 네임스페이스 관련
+    NAMESPACE_NOT_FOUND(4201, HttpStatus.NOT_FOUND, "네임스페이스를 찾을 수 없습니다."),
+    NAMESPACE_CREATION_FAILED(4202, HttpStatus.BAD_REQUEST, "네임스페이스 생성에 실패했습니다."),
+    DUPLICATED_NAMESPACE_NAME(4203, HttpStatus.CONFLICT, "동일한 이름의 네임스페이스가 이미 존재합니다."),
+    NAMESPACE_DELETION_FAILED(4204, HttpStatus.INTERNAL_SERVER_ERROR, "네임스페이스 삭제에 실패했습니다."),
+    NAMESPACE_UPDATE_FAILED(4205, HttpStatus.BAD_REQUEST, "네임스페이스 수정에 실패했습니다."),
+
+    //✅ 4300번대: 디플로이먼트 관련
+    DEPLOYMENT_NOT_FOUND(4301, HttpStatus.NOT_FOUND, "디플로이먼트를 찾을 수 없습니다."),
+    DEPLOYMENT_CREATION_FAILED(4302, HttpStatus.BAD_REQUEST, "디플로이먼트 생성에 실패했습니다."),
+    DUPLICATED_DEPLOYMENT_NAME(4303, HttpStatus.CONFLICT, "동일한 이름의 디플로이먼트가 이미 존재합니다."),
+    DEPLOYMENT_UPDATE_FAILED(4304, HttpStatus.BAD_REQUEST, "디플로이먼트 수정에 실패했습니다."),
+    DEPLOYMENT_DELETION_FAILED(4305, HttpStatus.INTERNAL_SERVER_ERROR, "디플로이먼트 삭제에 실패했습니다."),
+
+    // ✅ 4400번대: 서비스 관련
+    SERVICE_NOT_FOUND(4401, HttpStatus.NOT_FOUND, "서비스를 찾을 수 없습니다."),
+    SERVICE_CREATION_FAILED(4402, HttpStatus.BAD_REQUEST, "서비스 생성에 실패했습니다."),
+    DUPLICATED_SERVICE_NAME(4403, HttpStatus.CONFLICT, "동일한 이름의 서비스가 이미 존재합니다."),
+    SERVICE_UPDATE_FAILED(4404, HttpStatus.BAD_REQUEST, "서비스 수정에 실패했습니다."),
+    SERVICE_DELETION_FAILED(4405, HttpStatus.INTERNAL_SERVER_ERROR, "서비스 삭제에 실패했습니다."),
+
+    // ✅ 4500번대: 파드 관련
+    POD_NOT_FOUND(4501, HttpStatus.NOT_FOUND, "파드를 찾을 수 없습니다."),
+    POD_LOG_FETCH_FAILED(4502, HttpStatus.INTERNAL_SERVER_ERROR, "파드 로그를 가져오는 데 실패했습니다."),
+
 
     // ✅ 5000번대: 권한 / 역할
     DUPLICATED_PERMISSION_NAME(5001, HttpStatus.BAD_REQUEST, "이미 존재하는 권한 이름입니다."),
