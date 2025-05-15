@@ -1,7 +1,9 @@
+// src/main/java/com/fisa/solra/domain/deployment/service/DeploymentService.java
 package com.fisa.solra.domain.deployment.service;
 
 import com.fisa.solra.domain.deployment.dto.DeploymentCreateRequestDto;
 import com.fisa.solra.domain.deployment.dto.DeploymentCreateResponseDto;
+import com.fisa.solra.domain.deployment.dto.DeploymentRequestDto;
 import com.fisa.solra.domain.deployment.dto.DeploymentResponseDto;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
@@ -9,7 +11,6 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,19 +31,14 @@ public class DeploymentService {
             throw new BusinessException(ErrorCode.NAMESPACE_NOT_FOUND);
         }
 
-        // 2) 디플로이먼트 목록 조회
+        // 2) 디플로이먼트 목록 조회 (빈 리스트여도 에러 NOT_THROW)
         List<Deployment> items = k8sClient.apps()
                 .deployments()
                 .inNamespace(namespace)
                 .list()
                 .getItems();
 
-        // 3) 조회 결과가 비어 있으면 에러
-        if (items.isEmpty()) {
-            throw new BusinessException(ErrorCode.DEPLOYMENT_NOT_FOUND);
-        }
-
-        // 4) DTO 변환 후 반환
+        // 3) DTO 변환 후 반환
         return items.stream()
                 .map(DeploymentResponseDto::from)
                 .collect(Collectors.toList());
@@ -50,7 +46,11 @@ public class DeploymentService {
 
     // ✅ 단일 조회
     public DeploymentResponseDto getDeployment(String namespace, String name) {
-        Deployment dp = k8sClient.apps().deployments().inNamespace(namespace).withName(name).get();
+        Deployment dp = k8sClient.apps()
+                .deployments()
+                .inNamespace(namespace)
+                .withName(name)
+                .get();
         if (dp == null) throw new BusinessException(ErrorCode.DEPLOYMENT_NOT_FOUND);
         return DeploymentResponseDto.from(dp);
     }
@@ -60,7 +60,6 @@ public class DeploymentService {
             String namespace,
             DeploymentCreateRequestDto dto) {
 
-        // 1) 중복 체크
         if (k8sClient.apps().deployments()
                 .inNamespace(namespace)
                 .withName(dto.getName())
@@ -68,7 +67,6 @@ public class DeploymentService {
             throw new BusinessException(ErrorCode.DUPLICATED_DEPLOYMENT_NAME);
         }
 
-        // 2) Deployment 모델 빌드
         Deployment deployment = new DeploymentBuilder()
                 .withNewMetadata()
                 .withName(dto.getName())
@@ -95,23 +93,57 @@ public class DeploymentService {
                 .endSpec()
                 .build();
 
-        // 3) 실제 생성 호출
         Deployment created = k8sClient.apps()
                 .deployments()
                 .inNamespace(namespace)
                 .resource(deployment)
                 .create();
-
         if (created == null) {
             throw new BusinessException(ErrorCode.DEPLOYMENT_CREATION_FAILED);
         }
 
-        // 4) 생성 전용 응답 DTO 로 변환하여 반환
+        // 4) 생성 전용 응답 DTO 빌드
         return DeploymentCreateResponseDto.builder()
                 .name(dto.getName())
                 .replicas(dto.getReplicas())
                 .labels(dto.getLabels())
-                .container(dto.getContainer())  // 필요에 따라 포함
+                .container(dto.getContainer())
                 .build();
+    }
+
+    // ✅ 수정
+    public DeploymentResponseDto updateDeployment(
+            String namespace,
+            String name,
+            DeploymentRequestDto dto) {
+
+        // 1) 기존 디플로이먼트 조회
+        Deployment existing = k8sClient.apps()
+                .deployments()
+                .inNamespace(namespace)
+                .withName(name)
+                .get();
+        if (existing == null) {
+            throw new BusinessException(ErrorCode.DEPLOYMENT_NOT_FOUND);
+        }
+
+        // 2) edit(lambda) 방식으로 spec.replicas만 부분 수정
+        Deployment updated = k8sClient.apps()
+                .deployments()
+                .inNamespace(namespace)
+                .withName(name)
+                .edit(d -> new DeploymentBuilder(d)
+                        .editSpec()
+                        .withReplicas(dto.getReplicas())
+                        .endSpec()
+                        .build());
+
+        // 3) 실패 체크
+        if (updated == null) {
+            throw new BusinessException(ErrorCode.DEPLOYMENT_UPDATE_FAILED);
+        }
+
+        // 4) DTO 변환 후 반환
+        return DeploymentResponseDto.from(updated);
     }
 }

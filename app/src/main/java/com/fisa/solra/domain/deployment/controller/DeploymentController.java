@@ -59,4 +59,16 @@ public class DeploymentController {
                 ));
     }
 
+    // ✅ 디플로이먼트 수정
+    @PatchMapping("/{name}")
+    public ResponseEntity<ApiResponse<DeploymentResponseDto>> update(
+            @PathVariable String namespace,
+            @PathVariable String name,
+            @RequestBody DeploymentRequestDto dto) {
+
+        DeploymentResponseDto updated =
+                deploymentService.updateDeployment(namespace, name, dto);
+        return ResponseEntity.ok(
+                ApiResponse.success(updated, "디플로이먼트 수정에 성공했습니다."));
+    }
 }
