@@ -46,4 +46,13 @@ public class NamespaceController {
                 ApiResponse.success(namespaceService.updateNamespace(name, dto), "네임스페이스 수정에 성공했습니다.")
         );
     }
+
+    // ✅ 네임스페이스 삭제
+    @DeleteMapping("/{name}")
+    public ResponseEntity<ApiResponse<String>> deleteNamespace(@PathVariable String name) {
+        namespaceService.deleteNamespace(name);
+        return ResponseEntity.ok(
+                ApiResponse.success(name, "네임스페이스 삭제에 성공했습니다.")
+        );
+    }
 }

@@ -6,6 +6,7 @@ import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.fabric8.kubernetes.api.model.StatusDetails;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -85,5 +86,25 @@ public class NamespaceService {
             throw new BusinessException(ErrorCode.NAMESPACE_UPDATE_FAILED);
         }
         return NamespaceResponseDto.from(updated);
+    }
+
+    // ✅ 네임스페이스 삭제
+    public void deleteNamespace(String name) {
+        // 1) 네임스페이스 존재 여부 확인
+        Namespace ns = k8sClient.namespaces().withName(name).get();
+        if (ns == null) {
+            throw new BusinessException(ErrorCode.NAMESPACE_NOT_FOUND);
+        }
+
+        // 2) List<StatusDetails> 로 받도록 변경
+        List<StatusDetails> statusDetails =
+                k8sClient.namespaces()
+                        .resource(ns)
+                        .delete();
+
+        // 3) 정상 삭제 시 한 개 이상의 StatusDetails 가 반환되므로, 비어 있으면 실패로 간주
+        if (statusDetails == null || statusDetails.isEmpty()) {
+            throw new BusinessException(ErrorCode.NAMESPACE_DELETION_FAILED);
+        }
     }
 }
