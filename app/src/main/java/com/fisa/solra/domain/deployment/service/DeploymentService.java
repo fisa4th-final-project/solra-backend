@@ -43,4 +43,11 @@ public class DeploymentService {
                 .map(DeploymentResponseDto::from)
                 .collect(Collectors.toList());
     }
+
+    // ✅ 단일 조회
+    public DeploymentResponseDto getDeployment(String namespace, String name) {
+        Deployment dp = k8sClient.apps().deployments().inNamespace(namespace).withName(name).get();
+        if (dp == null) throw new BusinessException(ErrorCode.DEPLOYMENT_NOT_FOUND);
+        return DeploymentResponseDto.from(dp);
+    }
 }
