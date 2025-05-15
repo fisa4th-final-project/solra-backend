@@ -51,6 +51,7 @@ public enum ErrorCode {
     DUPLICATED_NAMESPACE_NAME(4203, HttpStatus.CONFLICT, "동일한 이름의 네임스페이스가 이미 존재합니다."),
     NAMESPACE_DELETION_FAILED(4204, HttpStatus.INTERNAL_SERVER_ERROR, "네임스페이스 삭제에 실패했습니다."),
     NAMESPACE_UPDATE_FAILED(4205, HttpStatus.BAD_REQUEST, "네임스페이스 수정에 실패했습니다."),
+    NAMESPACE_UPDATE_NO_CHANGE(4206, HttpStatus.BAD_REQUEST,"변경된 내용이 없어 수정할 수 없습니다."),
 
     //✅ 4300번대: 디플로이먼트 관련
     DEPLOYMENT_NOT_FOUND(4301, HttpStatus.NOT_FOUND, "디플로이먼트를 찾을 수 없습니다."),
