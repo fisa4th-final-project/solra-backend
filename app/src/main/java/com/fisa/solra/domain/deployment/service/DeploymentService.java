@@ -8,6 +8,7 @@ import com.fisa.solra.domain.deployment.dto.DeploymentResponseDto;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.StatusDetails;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -145,5 +146,28 @@ public class DeploymentService {
 
         // 4) DTO 변환 후 반환
         return DeploymentResponseDto.from(updated);
+    }
+
+    // ✅ 디플로이먼트 삭제
+    public void deleteDeployment(String namespace, String name) {
+        // 1) 존재 여부 확인
+        Deployment existing = k8sClient.apps()
+                .deployments()
+                .inNamespace(namespace)
+                .withName(name)
+                .get();
+        if (existing == null) {
+            throw new BusinessException(ErrorCode.DEPLOYMENT_NOT_FOUND);
+        }
+
+        // 2) 클라이언트 루트에서 resource() 사용
+        List<StatusDetails> status = k8sClient
+                .resource(existing)
+                .delete();
+
+        // 3) 결과 검사
+        if (status == null || status.isEmpty()) {
+            throw new BusinessException(ErrorCode.DEPLOYMENT_DELETION_FAILED);
+        }
     }
 }

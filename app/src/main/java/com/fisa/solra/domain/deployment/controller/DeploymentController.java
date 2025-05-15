@@ -71,4 +71,15 @@ public class DeploymentController {
         return ResponseEntity.ok(
                 ApiResponse.success(updated, "디플로이먼트 수정에 성공했습니다."));
     }
+
+    // ✅ 디플로이먼트 삭제
+    @DeleteMapping("/{name}")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @PathVariable String namespace,
+            @PathVariable String name) {
+
+        deploymentService.deleteDeployment(namespace, name);
+        return ResponseEntity.ok(
+                ApiResponse.success(null, "디플로이먼트 삭제에 성공했습니다."));
+    }
 }
