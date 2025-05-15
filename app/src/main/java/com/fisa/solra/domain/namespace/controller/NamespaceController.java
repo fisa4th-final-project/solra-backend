@@ -1,14 +1,12 @@
 package com.fisa.solra.domain.namespace.controller;
 
+import com.fisa.solra.domain.namespace.dto.NamespaceRequestDto;
 import com.fisa.solra.domain.namespace.dto.NamespaceResponseDto;
 import com.fisa.solra.domain.namespace.service.NamespaceService;
 import com.fisa.solra.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -31,6 +29,13 @@ public class NamespaceController {
     public ResponseEntity<ApiResponse<NamespaceResponseDto>> getNamespace(@PathVariable String name) {
         return ResponseEntity.ok(
                 ApiResponse.success(namespaceService.getNamespace(name), "네임스페이스 상세 조회에 성공했습니다.")
+        );
+    }
+    // ✅ 네임스페이스 생성
+    @PostMapping
+    public ResponseEntity<ApiResponse<NamespaceResponseDto>> createNamespace(@RequestBody NamespaceRequestDto dto) {
+        return ResponseEntity.ok(
+                ApiResponse.success(namespaceService.createNamespace(dto), "네임스페이스 생성에 성공했습니다.")
         );
     }
 }
