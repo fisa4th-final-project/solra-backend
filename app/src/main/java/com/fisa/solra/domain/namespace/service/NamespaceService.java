@@ -47,4 +47,43 @@ public class NamespaceService {
         if (created == null) throw new BusinessException(ErrorCode.NAMESPACE_CREATION_FAILED);
         return NamespaceResponseDto.from(created);
     }
+
+    // ✅ 네임스페이스 수정 (라벨/어노테이션만 허용)
+    public NamespaceResponseDto updateNamespace(String name, NamespaceRequestDto dto) {
+        Namespace ns = k8sClient.namespaces().withName(name).get();
+        if (ns == null) {
+            throw new BusinessException(ErrorCode.NAMESPACE_NOT_FOUND);
+        }
+
+        var meta       = ns.getMetadata();
+        var oldLabels  = meta.getLabels();
+        var oldAnnos   = meta.getAnnotations();
+        var newLabels  = dto.getLabels();
+        var newAnnos   = dto.getAnnotations();
+
+        // → 요청한 키만 꺼내서 비교
+        boolean labelsUnchanged = newLabels.entrySet().stream()
+                .allMatch(e -> e.getValue().equals(oldLabels.get(e.getKey())));
+        boolean annosUnchanged  = newAnnos.entrySet().stream()
+                .allMatch(e -> e.getValue().equals(oldAnnos.get(e.getKey())));
+
+        if (labelsUnchanged && annosUnchanged) {
+            throw new BusinessException(ErrorCode.NAMESPACE_UPDATE_NO_CHANGE);
+        }
+
+        // edit() 로 실제 patch
+        Namespace updated = k8sClient.namespaces()
+                .withName(name)
+                .edit(n -> new NamespaceBuilder(n)
+                        .editMetadata()
+                        .withLabels(newLabels)
+                        .withAnnotations(newAnnos)
+                        .endMetadata()
+                        .build()
+                );
+        if (updated == null) {
+            throw new BusinessException(ErrorCode.NAMESPACE_UPDATE_FAILED);
+        }
+        return NamespaceResponseDto.from(updated);
+    }
 }

@@ -38,4 +38,12 @@ public class NamespaceController {
                 ApiResponse.success(namespaceService.createNamespace(dto), "네임스페이스 생성에 성공했습니다.")
         );
     }
+
+    // ✅ 네임스페이스 수정
+    @PatchMapping("/{name}")
+    public ResponseEntity<ApiResponse<NamespaceResponseDto>> updateNamespace(@PathVariable String name, @RequestBody NamespaceRequestDto dto) {
+        return ResponseEntity.ok(
+                ApiResponse.success(namespaceService.updateNamespace(name, dto), "네임스페이스 수정에 성공했습니다.")
+        );
+    }
 }
