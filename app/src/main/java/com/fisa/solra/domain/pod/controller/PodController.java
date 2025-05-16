@@ -25,4 +25,14 @@ public class PodController {
         List<PodResponseDto> pods = podService.getPods(namespace);
         return ResponseEntity.ok(ApiResponse.success(pods, "파드 목록 조회 성공"));
     }
+
+    // ✅ 단일 파드 조회
+    @GetMapping("/{name}")
+    public ResponseEntity<ApiResponse<PodResponseDto>> getPod(
+            @PathVariable String namespace,
+            @PathVariable String name
+    ) {
+        PodResponseDto pod = podService.getPod(namespace, name);
+        return ResponseEntity.ok(ApiResponse.success(pod, "파드 상세 조회 성공"));
+    }
 }
