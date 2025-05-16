@@ -28,4 +28,12 @@ public class ServiceController {
                 ApiResponse.success(serviceService.getServices(namespace), "서비스 리스트 조회에 성공했습니다.")
         );
     }
+
+    // ✅ 단일 서비스 상세 조회
+    @GetMapping("/{name}")
+    public ResponseEntity<ApiResponse<ServiceResponseDto>> get(@PathVariable String namespace, @PathVariable String name) {
+        return ResponseEntity.ok(
+                ApiResponse.success(serviceService.getService(namespace, name), "서비스 상세 조회에 성공했습니다.")
+        );
+    }
 }
