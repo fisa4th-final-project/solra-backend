@@ -51,4 +51,34 @@ public class ServiceService {
         // DTO 변환 후 반환
         return ServiceResponseDto.from(svc);
     }
+
+    // ✅ 서비스 생성
+    public ServiceResponseDto createService(String namespace, ServiceRequestDto dto) {
+        // 이름 중복 검사
+        if (k8sClient.services().inNamespace(namespace).withName(dto.getName()).get() != null)
+            throw new BusinessException(ErrorCode.DUPLICATED_SERVICE_NAME);
+
+        // Service 리소스 구성
+        var service = new ServiceBuilder()
+                .withNewMetadata().withName(dto.getName()).endMetadata()
+                .withNewSpec()
+                .withSelector(dto.getSelector())
+                .withType(dto.getType())
+                .withPorts(dto.getPorts().stream()
+                        .map(p -> new ServicePortBuilder()
+                                .withPort(p.getPort())
+                                .withTargetPort(new IntOrString(p.getTargetPort()))
+                                .withProtocol(p.getProtocol())
+                                .build())
+                        .collect(Collectors.toList()))
+                .endSpec()
+                .build();
+
+        // 생성 요청 실행
+        var created = k8sClient.services().inNamespace(namespace).resource(service).create();
+        if (created == null) throw new BusinessException(ErrorCode.SERVICE_CREATION_FAILED);
+
+        // DTO 반환
+        return ServiceResponseDto.from(created);
+    }
 }

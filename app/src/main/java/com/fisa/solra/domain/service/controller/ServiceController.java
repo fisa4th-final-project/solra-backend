@@ -1,14 +1,14 @@
 package com.fisa.solra.domain.service.controller;
 
+import com.fisa.solra.domain.service.dto.ServiceRequestDto;
 import com.fisa.solra.domain.service.dto.ServiceResponseDto;
 import com.fisa.solra.domain.service.service.ServiceService;
 import com.fisa.solra.global.response.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -35,5 +35,12 @@ public class ServiceController {
         return ResponseEntity.ok(
                 ApiResponse.success(serviceService.getService(namespace, name), "서비스 상세 조회에 성공했습니다.")
         );
+    }
+
+    // ✅ 서비스 생성
+    @PostMapping
+    public ResponseEntity<ApiResponse<ServiceResponseDto>> create(@PathVariable String namespace, @Valid @RequestBody ServiceRequestDto req) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(serviceService.createService(namespace, req), "서비스 생성에 성공했습니다."));
     }
 }
