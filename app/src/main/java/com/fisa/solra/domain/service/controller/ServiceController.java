@@ -51,4 +51,16 @@ public class ServiceController {
                 ApiResponse.success(serviceService.updateService(namespace, name, req), "서비스 수정에 성공했습니다.")
         );
     }
+
+    // ✅ 서비스 삭제
+    @DeleteMapping("/{name}")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @PathVariable String namespace,
+            @PathVariable String name) {
+
+        serviceService.deleteService(namespace, name);
+        return ResponseEntity.ok(
+                ApiResponse.success(null, "서비스 삭제에 성공했습니다.")
+        );
+    }
 }

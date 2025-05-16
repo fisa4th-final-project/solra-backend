@@ -142,4 +142,16 @@ public class ServiceService {
         // 수정 결과 반환
         return ServiceResponseDto.from(updated);
     }
+    // ✅ 서비스 삭제
+    public void deleteService(String namespace, String name) {
+        // 대상 서비스 조회
+        var svc = k8sClient.services().inNamespace(namespace).withName(name).get();
+        if (svc == null) throw new BusinessException(ErrorCode.SERVICE_NOT_FOUND);
+
+        // 삭제 요청
+        List<StatusDetails> result = k8sClient.services().inNamespace(namespace).resource(svc).delete();
+        if (result == null || result.isEmpty()) {
+            throw new BusinessException(ErrorCode.SERVICE_DELETION_FAILED);
+        }
+    }
 }
