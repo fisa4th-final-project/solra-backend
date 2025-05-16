@@ -17,5 +17,6 @@ public class ServiceRequestDto {
         private int port;
         private int targetPort;
         private String protocol;
+        private int nodePort;
     }
 }

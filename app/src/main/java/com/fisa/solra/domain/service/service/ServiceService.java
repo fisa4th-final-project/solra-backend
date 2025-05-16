@@ -1,10 +1,7 @@
 package com.fisa.solra.domain.service.service;
 
 
-import io.fabric8.kubernetes.api.model.ServiceBuilder;
-import io.fabric8.kubernetes.api.model.ServicePortBuilder;
-import io.fabric8.kubernetes.api.model.Namespace;
-import io.fabric8.kubernetes.api.model.IntOrString;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
 // 🔽 DTO/예외/로직 관련
@@ -19,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 
 @Service
@@ -80,5 +78,68 @@ public class ServiceService {
 
         // DTO 반환
         return ServiceResponseDto.from(created);
+    }
+
+    // ✅ 서비스 수정
+    public ServiceResponseDto updateService(String namespace, String name, ServiceRequestDto dto) {
+        // 대상 서비스 조회
+
+        // 사용 중인 nodePort 목록 수집
+        List<Integer> usedNodePorts = k8sClient.services().inNamespace(namespace).list().getItems().stream()
+                .flatMap(svc -> svc.getSpec().getPorts().stream())
+                .map(ServicePort::getNodePort)
+                .filter(Objects::nonNull)
+                .toList();
+        var svc = k8sClient.services().inNamespace(namespace).withName(name).get();
+        if (svc == null) throw new BusinessException(ErrorCode.SERVICE_NOT_FOUND);
+
+        // nodePort 중복 검사
+        boolean hasConflict = dto.getPorts().stream()
+                .map(p -> p.getNodePort())
+                .filter(p -> p != null)
+                .anyMatch(usedNodePorts::contains);
+        if (hasConflict) throw new BusinessException(ErrorCode.POD_NODEPORT_CONFLICT);
+
+        // 기존 정보와 비교하여 모두 동일하면 예외 발생
+        boolean isSamePorts = svc.getSpec().getPorts().equals(dto.getPorts().stream()
+                .map(p -> new ServicePortBuilder()
+                        .withPort(p.getPort())
+                        .withTargetPort(new IntOrString(p.getTargetPort()))
+                        .withProtocol(p.getProtocol())
+                        .withNodePort(p.getNodePort()) // NodePort 비교 추가
+                        .build())
+                .collect(Collectors.toList()));
+
+        boolean isSameSelector = svc.getSpec().getSelector().equals(dto.getSelector());
+        boolean isSameType = svc.getSpec().getType().equals(dto.getType());
+
+        if (isSamePorts && isSameSelector && isSameType) {
+            throw new BusinessException(ErrorCode.SERVICE_UPDATE_FAILED); // 변경 사항 없음
+        }
+
+        // edit() 사용하여 리소스 수정
+        var updated = k8sClient.services().inNamespace(namespace).withName(name).edit(s -> {
+            s.getSpec().setPorts(dto.getPorts().stream()
+                    .map(p -> new ServicePortBuilder()
+                            .withPort(p.getPort())
+                            .withTargetPort(new IntOrString(p.getTargetPort()))
+                            .withProtocol(p.getProtocol())
+                            .withNodePort(p.getNodePort()) // NodePort 설정 반영
+                            .build())
+                    .collect(Collectors.toList()));
+
+            s.getSpec().setSelector(dto.getSelector());
+
+            if (dto.getType() != null) {
+                s.getSpec().setType(dto.getType());
+            }
+
+            return s;
+        });
+
+        if (updated == null) throw new BusinessException(ErrorCode.SERVICE_UPDATE_FAILED);
+
+        // 수정 결과 반환
+        return ServiceResponseDto.from(updated);
     }
 }

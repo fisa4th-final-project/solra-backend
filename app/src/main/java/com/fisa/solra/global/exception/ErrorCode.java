@@ -66,6 +66,7 @@ public enum ErrorCode {
     DUPLICATED_SERVICE_NAME(4403, HttpStatus.CONFLICT, "동일한 이름의 서비스가 이미 존재합니다."),
     SERVICE_UPDATE_FAILED(4404, HttpStatus.BAD_REQUEST, "서비스 수정에 실패했습니다."),
     SERVICE_DELETION_FAILED(4405, HttpStatus.INTERNAL_SERVER_ERROR, "서비스 삭제에 실패했습니다."),
+    POD_NODEPORT_CONFLICT(4406, HttpStatus.CONFLICT, "이미 사용 중인 NodePort 번호입니다."),
 
     // ✅ 4500번대: 파드 관련
     POD_NOT_FOUND(4501, HttpStatus.NOT_FOUND, "파드를 찾을 수 없습니다."),

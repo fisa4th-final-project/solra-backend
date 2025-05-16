@@ -43,4 +43,12 @@ public class ServiceController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(serviceService.createService(namespace, req), "서비스 생성에 성공했습니다."));
     }
+
+    // ✅ 서비스 수정
+    @PatchMapping("/{name}")
+    public ResponseEntity<ApiResponse<ServiceResponseDto>> update(@PathVariable String namespace, @PathVariable String name, @Valid @RequestBody ServiceRequestDto req) {
+        return ResponseEntity.ok(
+                ApiResponse.success(serviceService.updateService(namespace, name, req), "서비스 수정에 성공했습니다.")
+        );
+    }
 }
