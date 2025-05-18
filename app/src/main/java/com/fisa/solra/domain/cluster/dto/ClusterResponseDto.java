@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClusterRequestDto {
+public class ClusterResponseDto {
     private Long clusterId;
     private Long orgId;
     private String name;
@@ -17,25 +17,12 @@ public class ClusterRequestDto {
     private String caCert;
     private String saToken;
     private String apiServerUrl;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    // DTO → Entity 변환
-    public Cluster toEntity() {
-        return Cluster.builder()
-                .clusterId(clusterId)
-                .orgId(orgId)
-                .name(name)
-                .env(env)
-                .caCert(caCert)
-                .saToken(saToken)
-                .apiServerUrl(apiServerUrl)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-    }
-
-    // Entity → DTO 변환 메서드 추가
-    public static ClusterRequestDto fromEntity(Cluster entity) {
-        return ClusterRequestDto.builder()
+    // Entity → DTO 변환
+    public static ClusterResponseDto fromEntity(Cluster entity) {
+        return ClusterResponseDto.builder()
                 .clusterId(entity.getClusterId())
                 .orgId(entity.getOrgId())
                 .name(entity.getName())
@@ -43,6 +30,8 @@ public class ClusterRequestDto {
                 .caCert(entity.getCaCert())
                 .saToken(entity.getSaToken())
                 .apiServerUrl(entity.getApiServerUrl())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
                 .build();
     }
 }

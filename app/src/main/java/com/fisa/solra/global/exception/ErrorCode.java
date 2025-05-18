@@ -41,6 +41,7 @@ public enum ErrorCode {
     CLUSTER_CREATION_FAILED(4002, HttpStatus.BAD_REQUEST, "클러스터 생성에 실패했습니다."),
     DUPLICATED_CLUSTER_NAME(4003, HttpStatus.CONFLICT, "동일한 이름의 클러스터가 이미 존재합니다."),
     CLUSTER_CONNECTION_FAILED(4004, HttpStatus.SERVICE_UNAVAILABLE, "Kubernetes API 연결에 실패했습니다."),
+    CLUSTER_APISERVER_DUPLICATE(4005, HttpStatus.BAD_REQUEST, "API 서버 주소가 이미 등록되어 있습니다."),
 
     // ✅ 4100번대: 노드 관련
     NODE_NOT_FOUND(4101, HttpStatus.NOT_FOUND, "해당 노드를 찾을 수 없습니다."),
