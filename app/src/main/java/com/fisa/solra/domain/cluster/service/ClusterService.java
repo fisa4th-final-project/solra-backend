@@ -11,12 +11,29 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ClusterService {
 
     private final Fabric8K8sConfig k8sConfig;
     private final ClusterRepository clusterRepository;
+
+    // ✅ 클러스터 전체 조회
+    public List<ClusterResponseDto> getClusters() {
+        return clusterRepository.findAll().stream()
+                .map(ClusterResponseDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    // ✅ 클러스터 단일 조회
+    public ClusterResponseDto getCluster(Long clusterId) {
+        Cluster c = clusterRepository.findById(clusterId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CLUSTER_NOT_FOUND));
+        return ClusterResponseDto.fromEntity(c);
+    }
 
     // ✅ 클러스터 등록 (연결 검증 후 저장)
     public ClusterResponseDto createCluster(ClusterRequestDto dto) {
@@ -40,4 +57,6 @@ public class ClusterService {
         Cluster saved = clusterRepository.save(dto.toEntity());
         return ClusterResponseDto.fromEntity(saved);
     }
+
+
 }

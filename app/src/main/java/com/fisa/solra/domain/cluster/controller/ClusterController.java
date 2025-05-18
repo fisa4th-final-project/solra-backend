@@ -2,7 +2,6 @@ package com.fisa.solra.domain.cluster.controller;
 
 import com.fisa.solra.domain.cluster.dto.ClusterRequestDto;
 import com.fisa.solra.domain.cluster.dto.ClusterResponseDto;
-import com.fisa.solra.domain.cluster.repository.ClusterRepository;
 import com.fisa.solra.domain.cluster.service.ClusterService;
 import com.fisa.solra.global.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -19,15 +18,21 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/clusters")
 public class ClusterController {
 
-    private final ClusterRepository clusterRepository;
+
     private final ClusterService clusterService;
 
-    // ✅ 클러스터 전체 조회
+    // ✅ 전체 조회
     @GetMapping
-    public List<ClusterResponseDto> getAllClusters() {
-        return clusterRepository.findAll().stream()
-                .map(ClusterResponseDto::fromEntity)
-                .collect(Collectors.toList());
+    public ResponseEntity<ApiResponse<List<ClusterResponseDto>>> list() {
+        List<ClusterResponseDto> all = clusterService.getClusters();
+        return ResponseEntity.ok(ApiResponse.success(all, "클러스터 목록 조회에 성공했습니다."));
+    }
+    // ✅ 단일 조회
+    @GetMapping("/{clusterId}")
+    public ResponseEntity<ApiResponse<ClusterResponseDto>> get(
+            @PathVariable Long clusterId) {
+        ClusterResponseDto dto = clusterService.getCluster(clusterId);
+        return ResponseEntity.ok(ApiResponse.success(dto, "클러스터 조회에 성공했습니다."));
     }
 
     // ✅ 클러스터 등록
