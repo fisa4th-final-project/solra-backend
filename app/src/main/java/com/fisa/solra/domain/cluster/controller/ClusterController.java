@@ -43,4 +43,11 @@ public class ClusterController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(created, "클러스터 생성에 성공했습니다."));
     }
+    // ✅ 삭제
+    @DeleteMapping("/{clusterId}")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @PathVariable Long clusterId) {
+        clusterService.delete(clusterId);
+        return ResponseEntity.ok(ApiResponse.success(null, "클러스터 삭제에 성공했습니다."));
+    }
 }

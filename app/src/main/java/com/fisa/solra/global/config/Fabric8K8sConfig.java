@@ -25,7 +25,7 @@ public class Fabric8K8sConfig {
      * DB에서 첫 번째 클러스터 메타를 읽어와
      * 외부 VPN API 서버로만 연결하는 전역 KubernetesClient 빈을 생성합니다.
      */
-    @Bean
+
     public KubernetesClient kubernetesClient() {
         // 1) DB에서 기본 클러스터 메타 조회
         Cluster cluster = clusterRepository.findAll().stream()
@@ -58,6 +58,7 @@ public class Fabric8K8sConfig {
     /**
      * (멀티-클러스터용) 직접 DTO를 주입할 때 쓰는 헬퍼 메서드
      */
+
     public KubernetesClient buildClient(ClusterRequestDto dto) {
         // 위와 동일한 로직을 중복 없이 호출하고 싶다면
         return kubernetesClient();

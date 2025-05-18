@@ -35,28 +35,38 @@ public class ClusterService {
         return ClusterResponseDto.fromEntity(c);
     }
 
-    // ✅ 클러스터 등록 (연결 검증 후 저장)
+    // ✅ 클러스터 등록
     public ClusterResponseDto createCluster(ClusterRequestDto dto) {
-        // 1) name 중복 체크
+        // 1) name 중복 검사
         if (clusterRepository.existsByName(dto.getName())) {
             throw new BusinessException(ErrorCode.DUPLICATED_CLUSTER_NAME);
         }
-        // 2) (선택) env까지 조합해서 체크
-        if (clusterRepository.existsByNameAndEnv(dto.getName(), dto.getEnv())) {
-            throw new BusinessException(ErrorCode.DUPLICATED_CLUSTER_NAME);
-        }
-        // 3) (선택) apiServerUrl 체크
+        // 2) apiServerUrl 중복 검사
         if (clusterRepository.existsByApiServerUrl(dto.getApiServerUrl())) {
             throw new BusinessException(ErrorCode.CLUSTER_APISERVER_DUPLICATE);
         }
 
-        // 정상적으로 중복이 아니면 Fabric8 연결 검증 후 저장
-        KubernetesClient client = k8sConfig.buildClient(dto);
-        client.getVersion(); // 연결 테스트
-
+        // 3) DB에 저장
         Cluster saved = clusterRepository.save(dto.toEntity());
+
+        // 4) 저장된 엔티티로 Client 생성 & 연결 테스트
+        KubernetesClient client = k8sConfig.buildClient(ClusterRequestDto.fromEntity(saved));
+        try {
+            client.getVersion();  // 실패 시 예외 발생
+        } catch (Exception e) {
+            // 연결 실패하면 저장 롤백
+            throw new BusinessException(ErrorCode.CLUSTER_CONNECTION_FAILED);
+        }
+
+        // 5) 정상 등록 응답
         return ClusterResponseDto.fromEntity(saved);
     }
 
-
+    // ✅
+    public void delete(Long clusterId) {
+        if (!clusterRepository.existsById(clusterId)) {
+            throw new BusinessException(ErrorCode.CLUSTER_NOT_FOUND);
+        }
+        clusterRepository.deleteById(clusterId);
+    }
 }
