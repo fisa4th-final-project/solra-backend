@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/namespaces/{namespace}/pods")
+@RequestMapping("/api/clusters/{clusterId}/namespaces/{namespace}/pods")
 @RequiredArgsConstructor
 public class PodController {
 
@@ -21,18 +21,26 @@ public class PodController {
 
     // ✅ 파드 전체 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<List<PodResponseDto>>> listPods(@PathVariable String namespace) {
-        List<PodResponseDto> pods = podService.getPods(namespace);
-        return ResponseEntity.ok(ApiResponse.success(pods, "파드 목록 조회 성공"));
+    public ResponseEntity<ApiResponse<List<PodResponseDto>>> listPods(
+            @PathVariable Long clusterId,
+            @PathVariable String namespace) {
+
+        List<PodResponseDto> pods = podService.getPods(clusterId, namespace);
+        return ResponseEntity.ok(
+                ApiResponse.success(pods, "파드 목록 조회 성공")
+        );
     }
 
     // ✅ 단일 파드 조회
     @GetMapping("/{name}")
     public ResponseEntity<ApiResponse<PodResponseDto>> getPod(
+            @PathVariable Long clusterId,
             @PathVariable String namespace,
-            @PathVariable String name
-    ) {
-        PodResponseDto pod = podService.getPod(namespace, name);
-        return ResponseEntity.ok(ApiResponse.success(pod, "파드 상세 조회 성공"));
+            @PathVariable String name) {
+
+        PodResponseDto pod = podService.getPod(clusterId, namespace, name);
+        return ResponseEntity.ok(
+                ApiResponse.success(pod, "파드 상세 조회 성공")
+        );
     }
 }
