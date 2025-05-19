@@ -10,8 +10,9 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NodeInfoResponseDto {
-    private String name;                        // 노드 이름
-    private String status;                      // Ready / NotReady
-    private Map<String, Quantity> capacity;       // 총 용량
-    private Map<String, Quantity> allocatable;    // 할당 가능 자원
+    private Long clusterId;                    // 여기에 추가
+    private String name;                       // 노드 이름
+    private String status;                     // Ready / NotReady
+    private Map<String, Quantity> capacity;    // 총 용량
+    private Map<String, Quantity> allocatable; // 할당 가능 자원
 }
