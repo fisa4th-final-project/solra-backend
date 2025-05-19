@@ -12,14 +12,16 @@ import java.util.Map;
 @Builder
 @AllArgsConstructor
 public class NamespaceResponseDto {
+    private Long clusterId;              // 추가
     private String name;
     private String status;
     private Map<String, String> labels;
     private Map<String, String> annotations;
     private OffsetDateTime createdAt;
 
-    public static NamespaceResponseDto from(Namespace ns) {
+    public static NamespaceResponseDto from(Long clusterId, Namespace ns) {
         return NamespaceResponseDto.builder()
+                .clusterId(clusterId)                                           // 세팅
                 .name(ns.getMetadata().getName())
                 .status(ns.getStatus().getPhase())
                 .labels(ns.getMetadata().getLabels())
