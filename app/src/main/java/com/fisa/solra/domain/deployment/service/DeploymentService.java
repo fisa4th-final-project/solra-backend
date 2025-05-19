@@ -1,14 +1,12 @@
 // src/main/java/com/fisa/solra/domain/deployment/service/DeploymentService.java
 package com.fisa.solra.domain.deployment.service;
 
-import com.fisa.solra.domain.cluster.dto.ClusterRequestDto;
-import com.fisa.solra.domain.cluster.entity.Cluster;
-import com.fisa.solra.domain.cluster.repository.ClusterRepository;
+
 import com.fisa.solra.domain.deployment.dto.DeploymentCreateRequestDto;
 import com.fisa.solra.domain.deployment.dto.DeploymentCreateResponseDto;
 import com.fisa.solra.domain.deployment.dto.DeploymentRequestDto;
 import com.fisa.solra.domain.deployment.dto.DeploymentResponseDto;
-import com.fisa.solra.global.config.Fabric8K8sConfig;
+import com.fisa.solra.global.config.KubernetesClientProvider;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
 import io.fabric8.kubernetes.api.model.Namespace;
@@ -26,45 +24,32 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DeploymentService {
 
-    private final ClusterRepository clusterRepository;
-    private final Fabric8K8sConfig k8sConfig;
-
-    /**
-     * DB에서 등록된 첫 클러스터 메타를 조회하여
-     * Fabric8 KubernetesClient를 생성합니다.
-     */
-    private KubernetesClient getClient() {
-        Cluster cluster = clusterRepository.findAll().stream()
-                .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.CLUSTER_NOT_FOUND));
-        ClusterRequestDto dto = ClusterRequestDto.fromEntity(cluster);
-        return k8sConfig.buildClient(dto);
-    }
+    private final KubernetesClientProvider clientProvider;
 
     // ✅ 전체 디플로이먼트 조회
-    public List<DeploymentResponseDto> getDeployments(String namespace) {
-        KubernetesClient client = getClient();
-        // 네임스페이스 존재 여부
+    public List<DeploymentResponseDto> getDeployments(Long clusterId, String namespace) {
+        KubernetesClient client = clientProvider.getClient(clusterId);
+
+        // (1) 네임스페이스 존재 여부 검사
         Namespace ns = client.namespaces().withName(namespace).get();
         if (ns == null) {
             throw new BusinessException(ErrorCode.NAMESPACE_NOT_FOUND);
         }
-        // Deployment 목록 조회
-        List<Deployment> items = client.apps()
-                .deployments()
+
+        // (2) Deployment 목록 조회 & DTO 변환
+        return client.apps().deployments()
                 .inNamespace(namespace)
                 .list()
-                .getItems();
-        return items.stream()
+                .getItems()
+                .stream()
                 .map(DeploymentResponseDto::from)
                 .collect(Collectors.toList());
     }
 
     // ✅ 단일 디플로이먼트 조회
-    public DeploymentResponseDto getDeployment(String namespace, String name) {
-        KubernetesClient client = getClient();
-        Deployment dp = client.apps()
-                .deployments()
+    public DeploymentResponseDto getDeployment(Long clusterId, String namespace, String name) {
+        KubernetesClient client = clientProvider.getClient(clusterId);
+        Deployment dp = client.apps().deployments()
                 .inNamespace(namespace)
                 .withName(name)
                 .get();
@@ -76,9 +61,12 @@ public class DeploymentService {
 
     // ✅ 디플로이먼트 생성
     public DeploymentCreateResponseDto createDeployment(
+            Long clusterId,
             String namespace,
             DeploymentCreateRequestDto dto) {
-        KubernetesClient client = getClient();
+
+        KubernetesClient client = clientProvider.getClient(clusterId);
+
         // 중복 체크
         if (client.apps().deployments()
                 .inNamespace(namespace)
@@ -86,6 +74,7 @@ public class DeploymentService {
                 .get() != null) {
             throw new BusinessException(ErrorCode.DUPLICATED_DEPLOYMENT_NAME);
         }
+
         // Deployment 모델 빌드
         Deployment deployment = new DeploymentBuilder()
                 .withNewMetadata().withName(dto.getName()).endMetadata()
@@ -104,15 +93,16 @@ public class DeploymentService {
                 .endTemplate()
                 .endSpec()
                 .build();
+
         // 생성 호출
-        Deployment created = client.apps()
-                .deployments()
+        Deployment created = client.apps().deployments()
                 .inNamespace(namespace)
                 .resource(deployment)
                 .create();
         if (created == null) {
             throw new BusinessException(ErrorCode.DEPLOYMENT_CREATION_FAILED);
         }
+
         // 생성 응답 DTO
         return DeploymentCreateResponseDto.builder()
                 .name(dto.getName())
@@ -124,42 +114,53 @@ public class DeploymentService {
 
     // ✅ 디플로이먼트 수정
     public DeploymentResponseDto updateDeployment(
+            Long clusterId,
             String namespace,
             String name,
             DeploymentRequestDto dto) {
-        KubernetesClient client = getClient();
-        Deployment existing = client.apps()
-                .deployments()
+
+        KubernetesClient client = clientProvider.getClient(clusterId);
+
+        // (1) 기존 Deployment 조회
+        Deployment existing = client.apps().deployments()
                 .inNamespace(namespace)
                 .withName(name)
                 .get();
         if (existing == null) {
             throw new BusinessException(ErrorCode.DEPLOYMENT_NOT_FOUND);
         }
-        Deployment updated = client.apps()
-                .deployments()
+
+        // (2) replicas 필드만 수정
+        Deployment updated = client.apps().deployments()
                 .inNamespace(namespace)
                 .withName(name)
                 .edit(d -> new DeploymentBuilder(d)
-                        .editSpec().withReplicas(dto.getReplicas()).endSpec()
-                        .build());
+                        .editSpec()
+                        .withReplicas(dto.getReplicas())
+                        .endSpec()
+                        .build()
+                );
         if (updated == null) {
             throw new BusinessException(ErrorCode.DEPLOYMENT_UPDATE_FAILED);
         }
+
         return DeploymentResponseDto.from(updated);
     }
 
     // ✅ 디플로이먼트 삭제
-    public void deleteDeployment(String namespace, String name) {
-        KubernetesClient client = getClient();
-        Deployment existing = client.apps()
-                .deployments()
+    public void deleteDeployment(Long clusterId, String namespace, String name) {
+        KubernetesClient client = clientProvider.getClient(clusterId);
+
+        // (1) 존재 여부 확인
+        Deployment existing = client.apps().deployments()
                 .inNamespace(namespace)
                 .withName(name)
                 .get();
         if (existing == null) {
             throw new BusinessException(ErrorCode.DEPLOYMENT_NOT_FOUND);
         }
+
+        // (2) 삭제
         List<StatusDetails> status = client
                 .resource(existing)
                 .delete();
