@@ -23,11 +23,16 @@ public class KubernetesClientProvider {
      */
     @Cacheable(cacheNames = "k8sClient", key = "#clusterId")
     public KubernetesClient getClient(Long clusterId) {
-        Cluster cluster = clusterRepository.findById(clusterId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CLUSTER_NOT_FOUND));
-        ClusterRequestDto dto = ClusterRequestDto.fromEntity(cluster);
-        return k8sConfig.buildClient(dto);
+        try {
+            Cluster cluster = clusterRepository.findById(clusterId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.CLUSTER_CONNECTION_FAILED)); // 503으로 통일
+            ClusterRequestDto dto = ClusterRequestDto.fromEntity(cluster);
+            return k8sConfig.buildClient(dto);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.CLUSTER_CONNECTION_FAILED);
+        }
     }
+
 
     /** 클러스터 메타 변경 시 캐시 무효화 필요 */
     @CacheEvict(cacheNames = "k8sClient", key = "#clusterId")
