@@ -8,7 +8,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class DepartmentResponseDto {
+    private Long orgId;
+    private String orgName;
     private Long deptId;
-    private Long organizationId;
     private String deptName;
 }

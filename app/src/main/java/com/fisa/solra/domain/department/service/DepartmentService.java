@@ -23,12 +23,23 @@ public class DepartmentService {
     private final OrganizationRepository organizationRepository;
 
     // 전체 부서 조회
-    public List<DepartmentResponseDto> getAllDepartments() {
-        List<DepartmentResponseDto> list = departmentRepository.findAll().stream()
+    public List<DepartmentResponseDto> getAllDepartments(Long orgId) {
+        List<Department> departments;
+
+        if (orgId != null) {
+            // 조직 ID로 부서 필터링
+            departments = departmentRepository.findByOrganization_OrgId(orgId);
+        } else {
+            // 전체 부서 조회
+            departments = departmentRepository.findAll();
+        }
+
+        List<DepartmentResponseDto> list = departments.stream()
                 .map(dept -> DepartmentResponseDto.builder()
-                        .deptId(dept.getDeptId())
-                        .organizationId(dept.getOrganization().getOrgId())
-                        .deptName(dept.getDeptName())
+                        .orgId(dept.getOrganization().getOrgId())  // 조직 ID
+                        .orgName(dept.getOrganization().getOrgName()) // 조직 이름
+                        .deptId(dept.getDeptId())                        // 부서 ID
+                        .deptName(dept.getDeptName())                  // 부서 이름
                         .build())
                 .collect(Collectors.toList());
 
@@ -45,7 +56,7 @@ public class DepartmentService {
 
         return DepartmentResponseDto.builder()
                 .deptId(dept.getDeptId())
-                .organizationId(dept.getOrganization().getOrgId())
+                .orgId(dept.getOrganization().getOrgId())
                 .deptName(dept.getDeptName())
                 .build();
     }
@@ -76,7 +87,7 @@ public class DepartmentService {
             Department saved = departmentRepository.save(dept);
             return DepartmentResponseDto.builder()
                     .deptId(saved.getDeptId())
-                    .organizationId(saved.getOrganization().getOrgId())
+                    .orgId(saved.getOrganization().getOrgId())
                     .deptName(saved.getDeptName())
                     .build();
         } catch (DataIntegrityViolationException e) {
@@ -108,7 +119,7 @@ public class DepartmentService {
 
         return DepartmentResponseDto.builder()
                 .deptId(dept.getDeptId())
-                .organizationId(dept.getOrganization().getOrgId())
+                .orgId(dept.getOrganization().getOrgId())
                 .deptName(dept.getDeptName())
                 .build();
     }

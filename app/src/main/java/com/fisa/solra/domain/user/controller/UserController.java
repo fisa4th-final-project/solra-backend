@@ -70,6 +70,7 @@ public class UserController {
         return ApiResponse.success(userResponseDto, "사용자 상세 조회 성공");
     }
 
+    // 사용자 정보 기반 검색
     @GetMapping("/search")
     public ApiResponse<List<UserResponseDto>> searchUsers(
             @RequestParam(required = false) String userName,
