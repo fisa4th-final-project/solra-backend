@@ -4,6 +4,8 @@ import com.fisa.solra.domain.cluster.dto.ClusterRequestDto;
 import com.fisa.solra.domain.cluster.dto.ClusterResponseDto;
 import com.fisa.solra.domain.cluster.entity.Cluster;
 import com.fisa.solra.domain.cluster.repository.ClusterRepository;
+import com.fisa.solra.domain.organization.entity.Organization;
+import com.fisa.solra.domain.organization.repository.OrganizationRepository;
 import com.fisa.solra.global.config.Fabric8K8sConfig;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
@@ -21,10 +23,22 @@ public class ClusterService {
 
     private final Fabric8K8sConfig k8sConfig;
     private final ClusterRepository clusterRepository;
+    private final OrganizationRepository organizationRepository;
 
     // ✅ 클러스터 전체 조회
-    public List<ClusterResponseDto> getClusters() {
-        return clusterRepository.findAll().stream()
+    public List<ClusterResponseDto> getClusters(Long orgId) {
+        List<Cluster> clusters;
+
+        if (orgId != null) {
+            // 조직 ID로 필터링
+            clusters = clusterRepository.findByOrganization_OrgId(orgId);
+        } else {
+            // 전체 클러스터 조회
+            clusters = clusterRepository.findAll();
+        }
+
+        // Entity → DTO 변환
+        return clusters.stream()
                 .map(ClusterResponseDto::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -47,8 +61,12 @@ public class ClusterService {
             throw new BusinessException(ErrorCode.CLUSTER_APISERVER_DUPLICATE);
         }
 
-        // 3) DB에 저장
-        Cluster saved = clusterRepository.save(dto.toEntity());
+        // 3) orgId로 Organization 엔티티 조회
+        Organization organization = organizationRepository.findById(dto.getOrgId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.ORGANIZATION_NOT_FOUND));
+
+        // 4) DB에 저장
+        Cluster saved = clusterRepository.save(dto.toEntity(organization));
 
 /*        // 4) 저장된 엔티티로 Client 생성 & 연결 테스트
         KubernetesClient client = k8sConfig.buildClient(ClusterRequestDto.fromEntity(saved));

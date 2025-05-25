@@ -23,8 +23,10 @@ public class ClusterController {
 
     // ✅ 전체 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ClusterResponseDto>>> list() {
-        List<ClusterResponseDto> all = clusterService.getClusters();
+    public ResponseEntity<ApiResponse<List<ClusterResponseDto>>> list(
+            @RequestParam(required = false) Long orgId
+    ) {
+        List<ClusterResponseDto> all = clusterService.getClusters(orgId);
         return ResponseEntity.ok(ApiResponse.success(all, "클러스터 목록 조회에 성공했습니다."));
     }
     // ✅ 단일 조회
