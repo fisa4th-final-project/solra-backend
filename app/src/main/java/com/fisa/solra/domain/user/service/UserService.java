@@ -168,7 +168,9 @@ public class UserService {
                 .userName(user.getUserName())
                 .email(user.getEmail())
                 .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
+                .organizationName(user.getOrganization() != null ? user.getOrganization().getOrgName() : null)
                 .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
+                .departmentName(user.getDepartment() != null ? user.getDepartment().getDeptName() : null)
                 .build());
     }
 

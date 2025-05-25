@@ -14,5 +14,7 @@ public class UserResponseDto {
     private String userLoginId;
     private String email;
     private Long departmentId;
+    private String departmentName;
     private Long organizationId;
+    private String organizationName;
 }
