@@ -84,17 +84,22 @@ public class RolePermissionService {
 
     //특정 역할에 부여된 권한 삭제
     @Transactional
-    public void removePermission(RolePermissionRequestDto req) {
+    public void removePermissions(RolePermissionRequestDto req) {
         Long roleId = req.getRoleId();
-        Long permId = req.getPermissionId();
+        List<Long> permIds = req.getPermissionIds();
 
-        // 매핑 존재 확인
-        if (!rolePermissionRepository.existsByRoleRoleIdAndPermissionPermissionId(roleId, permId)) {
-            throw new BusinessException(ErrorCode.ROLE_PERMISSION_NOT_FOUND);
+        if (permIds == null || permIds.isEmpty()) {
+            throw new BusinessException(ErrorCode.PERMISSION_NOT_FOUND);
         }
 
-        // join테이블 레코드 삭제
-        rolePermissionRepository.deleteByRoleRoleIdAndPermissionPermissionId(roleId, permId);
+        for (Long permId : permIds) {
+            boolean exists = rolePermissionRepository.existsByRoleRoleIdAndPermissionPermissionId(roleId, permId);
+            if (!exists) continue; // 매핑이 없으면 건너뜀
+
+            // 삭제
+            rolePermissionRepository.deleteByRoleRoleIdAndPermissionPermissionId(roleId, permId);
+        }
+
         rolePermissionRepository.flush();
     }
 }

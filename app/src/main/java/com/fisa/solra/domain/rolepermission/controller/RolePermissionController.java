@@ -41,7 +41,7 @@ public class RolePermissionController {
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> removePermission(
             @RequestBody RolePermissionRequestDto requestDto) {
-        rolePermissionService.removePermission(requestDto);
+        rolePermissionService.removePermissions(requestDto);
         return ResponseEntity.ok(ApiResponse.success(null, "역할에서 권한 제거 성공"));
     }
 }
