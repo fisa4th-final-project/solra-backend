@@ -52,8 +52,12 @@ public class UserController {
 
     // 사용자 목록
     @GetMapping
-    public ApiResponse<Page<UserResponseDto>> getAllUsers(Pageable pageable){
-        Page<UserResponseDto> users = userService.getAllUsers(pageable);
+    public ApiResponse<Page<UserResponseDto>> getAllUsers(
+            Pageable pageable,
+            @RequestParam(required = false) String orgName,
+            @RequestParam(required = false) String deptName
+    ){
+        Page<UserResponseDto> users = userService.getAllUsers(pageable, orgName, deptName);
         return ApiResponse.success(users, "사용자 목록 조회 성공");
     }
 

@@ -153,16 +153,23 @@ public class UserService {
     }
 
     // 사용자 전체 조회
-    public Page<UserResponseDto> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable)
-                .map(user -> UserResponseDto.builder()
-                        .userId(user.getUserId())
-                        .userLoginId(user.getUserLoginId())
-                        .userName(user.getUserName())
-                        .email(user.getEmail())
-                        .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
-                        .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
-                        .build());
+    public Page<UserResponseDto> getAllUsers(Pageable pageable, String orgName, String deptName) {
+        Page<User> userPage;
+
+        if ((orgName == null || orgName.isBlank()) && (deptName == null || deptName.isBlank())) {
+            userPage = userRepository.findAll(pageable);
+        } else {
+            userPage = userRepository.findByOrgNameAndDeptName(orgName, deptName, pageable);
+        }
+
+        return userPage.map(user -> UserResponseDto.builder()
+                .userId(user.getUserId())
+                .userLoginId(user.getUserLoginId())
+                .userName(user.getUserName())
+                .email(user.getEmail())
+                .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
+                .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
+                .build());
     }
 
 }
