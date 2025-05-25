@@ -21,9 +21,9 @@ public class RolePermissionController {
 
     //역할에 권한 추가
     @PostMapping
-    public ResponseEntity<ApiResponse<RolePermissionResponseDto>> assignPermission(
+    public ResponseEntity<ApiResponse<List<RolePermissionResponseDto>>> assignPermissions(
             @RequestBody RolePermissionRequestDto requestDto) {
-        RolePermissionResponseDto dto = rolePermissionService.assignPermission(requestDto);
+        List<RolePermissionResponseDto> dto = rolePermissionService.assignPermission(requestDto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(dto, "권한이 역할에 성공적으로 부여되었습니다."));
