@@ -50,14 +50,14 @@ public class ClusterService {
         // 3) DB에 저장
         Cluster saved = clusterRepository.save(dto.toEntity());
 
-        // 4) 저장된 엔티티로 Client 생성 & 연결 테스트
+/*        // 4) 저장된 엔티티로 Client 생성 & 연결 테스트
         KubernetesClient client = k8sConfig.buildClient(ClusterRequestDto.fromEntity(saved));
         try {
             client.getVersion();  // 실패 시 예외 발생
         } catch (Exception e) {
             // 연결 실패하면 저장 롤백
             throw new BusinessException(ErrorCode.CLUSTER_CONNECTION_FAILED);
-        }
+        }*/
 
         // 5) 정상 등록 응답
         return ClusterResponseDto.fromEntity(saved);
@@ -96,13 +96,13 @@ public class ClusterService {
         existing.update(dto);
         Cluster saved = clusterRepository.save(existing);
 
-        // 5) 연결 재검증 (옵션)
+/*        // 5) 연결 재검증 (옵션)
         try {
             KubernetesClient client = k8sConfig.buildClient(ClusterRequestDto.fromEntity(saved));
             client.getVersion();
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.CLUSTER_CONNECTION_FAILED);
-        }
+        }*/
 
         return ClusterResponseDto.fromEntity(saved);
     }
