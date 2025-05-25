@@ -14,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -66,6 +68,17 @@ public class UserController {
     public ApiResponse<UserResponseDto> getUse(@PathVariable Long userId) {
         UserResponseDto userResponseDto = userService.getUserById(userId);
         return ApiResponse.success(userResponseDto, "사용자 상세 조회 성공");
+    }
+
+    @GetMapping("/search")
+    public ApiResponse<List<UserResponseDto>> searchUsers(
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String orgName,
+            @RequestParam(required = false) String deptName
+    ) {
+        List<UserResponseDto> users = userService.searchUsers(userName, email, orgName, deptName);
+        return ApiResponse.success(users, "사용자 조건 검색 성공");
     }
 
 }

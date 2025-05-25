@@ -21,6 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -173,5 +175,25 @@ public class UserService {
                 .departmentName(user.getDepartment() != null ? user.getDepartment().getDeptName() : null)
                 .build());
     }
+
+    // 사용자 이름, 조직, 부서, 이메일 검색
+    public List<UserResponseDto> searchUsers(String userName, String email, String orgName, String deptName) {
+        List<User> users = userRepository.searchByConditions(userName, email, orgName, deptName);
+
+        return users.stream()
+                .map(user -> UserResponseDto.builder()
+                        .userId(user.getUserId())
+                        .userLoginId(user.getUserLoginId())
+                        .userName(user.getUserName())
+                        .email(user.getEmail())
+                        .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
+                        .organizationName(user.getOrganization() != null ? user.getOrganization().getOrgName() : null)
+                        .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
+                        .departmentName(user.getDepartment() != null ? user.getDepartment().getDeptName() : null)
+                        .build())
+                .toList();
+    }
+
+
 
 }
