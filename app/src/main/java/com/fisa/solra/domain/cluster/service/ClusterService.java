@@ -114,4 +114,19 @@ public class ClusterService {
         }
         clusterRepository.deleteById(clusterId);
     }
+
+    // 클러스터 연결 검증
+    public void testConnection(Long clusterId) {
+        // 1) 클러스터 조회
+        Cluster cluster = clusterRepository.findById(clusterId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CLUSTER_NOT_FOUND));
+
+        // 2) Kubernetes Client 생성 및 연결 테스트
+        try {
+            KubernetesClient client = k8sConfig.buildClient(ClusterRequestDto.fromEntity(cluster));
+            client.getVersion(); // 연결 시도
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.CLUSTER_CONNECTION_FAILED);
+        }
+    }
 }

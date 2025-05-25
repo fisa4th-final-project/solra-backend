@@ -62,4 +62,12 @@ public class ClusterController {
         clusterService.delete(clusterId);
         return ResponseEntity.ok(ApiResponse.success(null, "클러스터 삭제에 성공했습니다."));
     }
+
+    // 클러스터 연결 테스트 API
+    @PostMapping("/{clusterId}/test-connection")
+    public ResponseEntity<ApiResponse<String>> testClusterConnection(@PathVariable Long clusterId) {
+        clusterService.testConnection(clusterId);
+        return ResponseEntity.ok(ApiResponse.success(null, "클러스터 연결 테스트 성공"));
+    }
+
 }
