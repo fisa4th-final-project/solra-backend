@@ -55,6 +55,7 @@ public class PermissionService {
         // ✅ 그 외는 권한 이름 매칭 검사
         return auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals(permission));
+    }
     //권한 생성
     @Transactional
     public PermissionResponseDto createPermission(PermissionRequestDto requestDto) {
