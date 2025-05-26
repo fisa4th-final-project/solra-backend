@@ -1,6 +1,7 @@
 package com.fisa.solra.domain.user.repository;
 
 import com.fisa.solra.domain.user.entity.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,6 +22,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 사용자 이메일 중복 검사
     boolean existsByEmailAndUserIdNot(String email, Long userId);
 
+    //
+    @EntityGraph(attributePaths = {"roles", "directPermissions"}) // fetch용 지정
+    Optional<User> findByUserId(Long userId);
     @Query("SELECT u FROM User u " +
             "LEFT JOIN u.organization o " +
             "LEFT JOIN u.department d " +

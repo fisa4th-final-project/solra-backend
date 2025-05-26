@@ -1,9 +1,14 @@
 package com.fisa.solra.global.config;
 
+import com.fisa.solra.global.security.JwtSessionAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,19 +17,26 @@ import org.springframework.security.web.SecurityFilterChain;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtSessionAuthenticationFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
         http
                 .cors(withDefaults())
                 .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+                        .requestMatchers("/api/auth/login", "/api/users").permitAll()  // 로그인은 허용
+                        .anyRequest().authenticated() // 나머지는 인증 필요
                 )
-                .formLogin(form -> form.disable());
-
-        return http.build();
+                .formLogin(form -> form.disable())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // 🔥 필터 등록
+                .build();
     }
 
     // CORS 설정

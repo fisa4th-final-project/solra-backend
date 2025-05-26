@@ -2,11 +2,14 @@ package com.fisa.solra.domain.user.entity;
 
 import com.fisa.solra.domain.department.entity.Department;
 import com.fisa.solra.domain.organization.entity.Organization;
+import com.fisa.solra.domain.userpermission.entity.UserPermission;
+import com.fisa.solra.domain.userrole.entity.UserRole;
 import com.fisa.solra.domain.role.entity.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,6 +47,14 @@ public class User {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // ✅ User ↔ UserRole 관계
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserRole> userRoles;
+
+    // ✅ User ↔ UserPermission 관계
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserPermission> userPermissions;
 
     @PrePersist
     protected void onCreate() { this.createdAt = LocalDateTime.now(); }

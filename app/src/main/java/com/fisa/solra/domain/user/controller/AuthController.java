@@ -1,5 +1,7 @@
 package com.fisa.solra.domain.user.controller;
 
+import com.fisa.solra.domain.permission.entity.Permission;
+import com.fisa.solra.domain.permission.service.PermissionService;
 import com.fisa.solra.domain.user.dto.LoginRequestDto;
 import com.fisa.solra.domain.user.dto.UserLoginInfo;
 import com.fisa.solra.domain.user.dto.UserResponseDto;
@@ -13,8 +15,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -23,6 +29,7 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PermissionService permissionService;
 
     @PostMapping("/login")
     public ApiResponse<UserLoginInfo> login(
@@ -39,6 +46,12 @@ public class AuthController {
                 loginInfo.getDeptId(),
                 loginInfo.getRoles().toString()
         );
+
+        // Spring Security 인증 객체 등록
+        List<GrantedAuthority> authorities = permissionService.getAuthorities(loginInfo.getUserId());
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(loginInfo.getUserId(), null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // 세션에 저장
         session.setAttribute("jwtToken", token);
