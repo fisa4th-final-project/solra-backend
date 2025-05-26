@@ -45,10 +45,10 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // 모든 경로에 대해
-                        .allowedOriginPatterns("*") // 모든 주소 허용
+                        .allowedOrigins("http://localhost:5173", "http://solra-frontend") // 오리진 명확히 명시
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
-                        .allowCredentials(true);
+                        .allowCredentials(true); // 쿠키 허용
             }
         };
     }
