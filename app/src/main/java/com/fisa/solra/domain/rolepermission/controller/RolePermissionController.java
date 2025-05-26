@@ -21,9 +21,9 @@ public class RolePermissionController {
 
     //역할에 권한 추가
     @PostMapping
-    public ResponseEntity<ApiResponse<RolePermissionResponseDto>> assignPermission(
+    public ResponseEntity<ApiResponse<List<RolePermissionResponseDto>>> assignPermissions(
             @RequestBody RolePermissionRequestDto requestDto) {
-        RolePermissionResponseDto dto = rolePermissionService.assignPermission(requestDto);
+        List<RolePermissionResponseDto> dto = rolePermissionService.assignPermission(requestDto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(dto, "권한이 역할에 성공적으로 부여되었습니다."));
@@ -41,7 +41,7 @@ public class RolePermissionController {
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> removePermission(
             @RequestBody RolePermissionRequestDto requestDto) {
-        rolePermissionService.removePermission(requestDto);
+        rolePermissionService.removePermissions(requestDto);
         return ResponseEntity.ok(ApiResponse.success(null, "역할에서 권한 제거 성공"));
     }
 }

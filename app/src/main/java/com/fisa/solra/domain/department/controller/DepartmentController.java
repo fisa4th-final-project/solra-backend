@@ -19,8 +19,10 @@ public class DepartmentController {
 
     // 전체 부서 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DepartmentResponseDto>>> getDepartments() {
-        List<DepartmentResponseDto> list = departmentService.getAllDepartments();
+    public ResponseEntity<ApiResponse<List<DepartmentResponseDto>>> getDepartments(
+            @RequestParam(required = false) Long orgId
+    ) {
+        List<DepartmentResponseDto> list = departmentService.getAllDepartments(orgId);
         return ResponseEntity.ok(ApiResponse.success(list, "부서 목록 조회 성공"));
     }
 

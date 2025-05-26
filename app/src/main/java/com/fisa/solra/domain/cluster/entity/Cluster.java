@@ -1,6 +1,7 @@
 package com.fisa.solra.domain.cluster.entity;
 
 import com.fisa.solra.domain.cluster.dto.ClusterRequestDto;
+import com.fisa.solra.domain.organization.entity.Organization;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,8 +17,10 @@ public class Cluster {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long clusterId;
 
-    @Column(nullable = false)
-    private Long orgId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "org_id", nullable = false)
+    private Organization organization;
+
 
     @Column(nullable = false, length = 100)
     private String name;

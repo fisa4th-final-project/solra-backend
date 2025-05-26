@@ -24,7 +24,7 @@ public class ClusterResponseDto {
     public static ClusterResponseDto fromEntity(Cluster entity) {
         return ClusterResponseDto.builder()
                 .clusterId(entity.getClusterId())
-                .orgId(entity.getOrgId())
+                .orgId(entity.getOrganization().getOrgId())
                 .name(entity.getName())
                 .env(entity.getEnv())
                 .caCert(entity.getCaCert())

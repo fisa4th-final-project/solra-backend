@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,34 +29,41 @@ public class RolePermissionService {
 
     //역할에 권한 추가
     @Transactional
-    public RolePermissionResponseDto assignPermission(RolePermissionRequestDto req) {
+    public List<RolePermissionResponseDto> assignPermission(RolePermissionRequestDto req) {
         Long roleId = req.getRoleId();
-        Long permId = req.getPermissionId();
+        List<Long> permissionIds = req.getPermissionIds();
 
         // 1) 존재 확인
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROLE_NOT_FOUND));
-        Permission perm = permissionRepository.findById(permId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PERMISSION_NOT_FOUND));
 
-        // 2) 중복 확인
-        if (rolePermissionRepository.existsByRoleRoleIdAndPermissionPermissionId(roleId, permId)) {
-            throw new BusinessException(ErrorCode.ROLE_ALREADY_ASSIGNED);
+        List<RolePermissionResponseDto> resultList = new ArrayList<>();
+
+        for (Long permId : permissionIds) {
+            // 2) 권한 존재 확인
+            Permission perm = permissionRepository.findById(permId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.PERMISSION_NOT_FOUND));
+
+            // 3) 중복 확인
+            boolean exists = rolePermissionRepository.existsByRoleRoleIdAndPermissionPermissionId(roleId, permId);
+            if (exists) continue;  // 이미 할당된 권한은 건너뜀
+
+            // 4) 저장
+            RolePermission rp = rolePermissionRepository.save(
+                    RolePermission.builder()
+                            .role(role)
+                            .permission(perm)
+                            .build()
+            );
+
+            resultList.add(RolePermissionResponseDto.builder()
+                    .rolePermissionId(rp.getRolePermissionId())
+                    .roleId(roleId)
+                    .permissionId(permId)
+                    .build());
         }
 
-        // 3) 저장
-        RolePermission rp = rolePermissionRepository.save(
-                RolePermission.builder()
-                        .role(role)
-                        .permission(perm)
-                        .build()
-        );
-
-        return RolePermissionResponseDto.builder()
-                .rolePermissionId(rp.getRolePermissionId())
-                .roleId(roleId)
-                .permissionId(permId)
-                .build();
+        return resultList;
     }
 
     //특정 역할에 부여된 권한 조회
@@ -76,17 +84,22 @@ public class RolePermissionService {
 
     //특정 역할에 부여된 권한 삭제
     @Transactional
-    public void removePermission(RolePermissionRequestDto req) {
+    public void removePermissions(RolePermissionRequestDto req) {
         Long roleId = req.getRoleId();
-        Long permId = req.getPermissionId();
+        List<Long> permIds = req.getPermissionIds();
 
-        // 매핑 존재 확인
-        if (!rolePermissionRepository.existsByRoleRoleIdAndPermissionPermissionId(roleId, permId)) {
-            throw new BusinessException(ErrorCode.ROLE_PERMISSION_NOT_FOUND);
+        if (permIds == null || permIds.isEmpty()) {
+            throw new BusinessException(ErrorCode.PERMISSION_NOT_FOUND);
         }
 
-        // join테이블 레코드 삭제
-        rolePermissionRepository.deleteByRoleRoleIdAndPermissionPermissionId(roleId, permId);
+        for (Long permId : permIds) {
+            boolean exists = rolePermissionRepository.existsByRoleRoleIdAndPermissionPermissionId(roleId, permId);
+            if (!exists) continue; // 매핑이 없으면 건너뜀
+
+            // 삭제
+            rolePermissionRepository.deleteByRoleRoleIdAndPermissionPermissionId(roleId, permId);
+        }
+
         rolePermissionRepository.flush();
     }
 }
