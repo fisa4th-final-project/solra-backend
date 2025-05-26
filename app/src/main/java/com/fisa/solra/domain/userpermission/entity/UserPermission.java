@@ -26,4 +26,10 @@ public class UserPermission {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "permission_id", nullable = false)
     private Permission permission;
+
+    public UserPermission(User user, Permission permission) {
+        this.user = user;
+        this.permission = permission;
+    }
+
 }

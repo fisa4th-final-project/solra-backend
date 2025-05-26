@@ -22,5 +22,7 @@ public interface PermissionRepository extends JpaRepository<Permission, Long> {
         WHERE up.user.userId = :userId
     """)
     List<String> findAllPermissionNamesByUserId(@Param("userId") Long userId);
+           
+    boolean existsByPermissionName(String permissionName);
 }
 

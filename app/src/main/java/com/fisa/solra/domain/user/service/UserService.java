@@ -12,10 +12,16 @@ import com.fisa.solra.domain.user.entity.User;
 import com.fisa.solra.domain.user.repository.UserRepository;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
+import com.fisa.solra.global.response.ApiResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +48,7 @@ public class UserService {
                 .userId(user.getUserId())
                 .orgId(orgId)
                 .deptId(deptId)
-                .role("ROOT") // 또는 user.getRole().getRoleName()
+                .roles(user.getRoles()) // 또는 user.getRole().getRoleName()
                 .build();
     }
 
@@ -114,6 +120,13 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        // userLoginId 중복 검사 (현재 user 제외)
+        if (requestDto.getUserLoginId() != null &&
+                !requestDto.getUserLoginId().equals(user.getUserLoginId()) &&
+                userRepository.existsByUserLoginId(requestDto.getUserLoginId())) {
+            throw new BusinessException(ErrorCode.USER_LOGIN_ID_DUPLICATED);
+        }
+
         // 이메일 중복 검사 (자기 자신 제외)
         boolean emailTaken = userRepository.existsByEmailAndUserIdNot(requestDto.getEmail(), userId);
         if (emailTaken) {
@@ -121,7 +134,7 @@ public class UserService {
         }
 
         // 필드 업데이트
-        user.updateUserInfo(requestDto.getUserName(), requestDto.getEmail());
+        user.updateUserInfo(requestDto.getUserLoginId(), requestDto.getUserName(), requestDto.getEmail(), passwordEncoder.encode(requestDto.getPassword()));
 
         return UserResponseDto.builder()
                 .userId(user.getUserId())
@@ -132,4 +145,55 @@ public class UserService {
                 .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
                 .build();
     }
+
+    // 사용자 삭제
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        userRepository.delete(user);
+    }
+
+    // 사용자 전체 조회
+    public Page<UserResponseDto> getAllUsers(Pageable pageable, String orgName, String deptName) {
+        Page<User> userPage;
+
+        if ((orgName == null || orgName.isBlank()) && (deptName == null || deptName.isBlank())) {
+            userPage = userRepository.findAll(pageable);
+        } else {
+            userPage = userRepository.findByOrgNameAndDeptName(orgName, deptName, pageable);
+        }
+
+        return userPage.map(user -> UserResponseDto.builder()
+                .userId(user.getUserId())
+                .userLoginId(user.getUserLoginId())
+                .userName(user.getUserName())
+                .email(user.getEmail())
+                .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
+                .organizationName(user.getOrganization() != null ? user.getOrganization().getOrgName() : null)
+                .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
+                .departmentName(user.getDepartment() != null ? user.getDepartment().getDeptName() : null)
+                .build());
+    }
+
+    // 사용자 이름, 조직, 부서, 이메일 검색
+    public List<UserResponseDto> searchUsers(String userName, String email, String orgName, String deptName) {
+        List<User> users = userRepository.searchByConditions(userName, email, orgName, deptName);
+
+        return users.stream()
+                .map(user -> UserResponseDto.builder()
+                        .userId(user.getUserId())
+                        .userLoginId(user.getUserLoginId())
+                        .userName(user.getUserName())
+                        .email(user.getEmail())
+                        .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
+                        .organizationName(user.getOrganization() != null ? user.getOrganization().getOrgName() : null)
+                        .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
+                        .departmentName(user.getDepartment() != null ? user.getDepartment().getDeptName() : null)
+                        .build())
+                .toList();
+    }
+
+
+
 }

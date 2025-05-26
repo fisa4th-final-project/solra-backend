@@ -24,11 +24,7 @@ public class OrganizationService {
 
     // 조직 생성 (ROOT 권한 필요)
     @Transactional
-    public OrganizationResponseDto createOrganization(String orgName, String role) {
-        // 권한 확인
-        if (!"ROOT".equals(role)) {
-            throw new BusinessException(ErrorCode.ACCESS_DENIED);
-        }
+    public OrganizationResponseDto createOrganization(String orgName) {
 
         // 이름 유효성 검증
         if (orgName == null || orgName.trim().isEmpty()) {
@@ -99,11 +95,7 @@ public class OrganizationService {
         if (!organizationRepository.existsById(orgId)) {
             throw new BusinessException(ErrorCode.ORGANIZATION_NOT_FOUND);
         }
-        try {
-            organizationRepository.deleteById(orgId);
-            organizationRepository.flush();
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException(ErrorCode.ORGANIZATION_DELETE_FAILED);
-        }
+        organizationRepository.deleteById(orgId);
+        organizationRepository.flush();
     }
 }

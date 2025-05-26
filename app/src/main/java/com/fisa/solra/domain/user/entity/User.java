@@ -4,11 +4,14 @@ import com.fisa.solra.domain.department.entity.Department;
 import com.fisa.solra.domain.organization.entity.Organization;
 import com.fisa.solra.domain.userpermission.entity.UserPermission;
 import com.fisa.solra.domain.userrole.entity.UserRole;
+import com.fisa.solra.domain.role.entity.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -59,8 +62,18 @@ public class User {
     @PreUpdate
     protected void onUpdate() { this.updatedAt = LocalDateTime.now(); }
 
-    public void updateUserInfo(String name, String email) {
+    public void updateUserInfo(String userLoginId, String name, String email, String password) {
+        this.userLoginId = userLoginId;
+        this.password = password;
         this.userName = name;
         this.email = email;
     }
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
 }

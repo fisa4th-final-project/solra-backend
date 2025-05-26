@@ -10,6 +10,8 @@ import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
 import com.fisa.solra.global.jwt.JwtTokenProvider;
 import com.fisa.solra.global.response.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +44,7 @@ public class AuthController {
                 loginInfo.getUserId(),
                 loginInfo.getOrgId(),
                 loginInfo.getDeptId(),
-                loginInfo.getRole()
+                loginInfo.getRoles().toString()
         );
 
         // Spring Security 인증 객체 등록
@@ -68,5 +70,24 @@ public class AuthController {
 
         UserResponseDto userResponseDto = userService.getUserById(userId);
         return ApiResponse.success(userResponseDto, "사용자 정보 조회 성공");
+    }
+
+    // 사용자 로그아웃
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(HttpServletRequest request, HttpServletResponse response){
+
+        // 현재 인증된 사용자 정보 제거
+        SecurityContextHolder.clearContext();
+
+        // 세션 무효화
+        request.getSession(false).invalidate();
+
+        // (선택) JWT 쿠키 만료 처리
+        // Cookie cookie = new Cookie("Authorization", null);
+        // cookie.setMaxAge(0);
+        // cookie.setPath("/");
+        // response.addCookie(cookie);
+
+        return ApiResponse.success(null, "로그아웃 성공");
     }
 }
