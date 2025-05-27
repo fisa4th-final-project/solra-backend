@@ -4,6 +4,7 @@ import com.fisa.solra.domain.department.entity.Department;
 import com.fisa.solra.domain.department.repository.DepartmentRepository;
 import com.fisa.solra.domain.organization.entity.Organization;
 import com.fisa.solra.domain.organization.repository.OrganizationRepository;
+import com.fisa.solra.domain.permission.service.PermissionService;
 import com.fisa.solra.domain.user.dto.UserCreateRequestDto;
 import com.fisa.solra.domain.user.dto.UserLoginInfo;
 import com.fisa.solra.domain.user.dto.UserResponseDto;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,7 @@ public class UserService {
     private final OrganizationRepository organizationRepository;
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PermissionService permissionService;
 
     public UserLoginInfo login(String userLoginId, String password) {
         User user = userRepository.findByUserLoginId(userLoginId)
@@ -115,28 +118,44 @@ public class UserService {
 
     // 사용자 수정
     @Transactional
-    public UserResponseDto updateUser(Long userId, UserUpdateRequestDto requestDto) {
+    public UserResponseDto updateUser(Long targetUserId, UserUpdateRequestDto requestDto) {
+        Long currentOrgId  = SecurityUtil.getOrgId();
+        List<String> roles = SecurityUtil.getRoles();
 
-
-        // 사용자 존재 확인
-        User user = userRepository.findById(userId)
+        // 대상 사용자 조회 (권한/검증 공통 사용)
+        User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // userLoginId 중복 검사 (현재 user 제외)
+        // 1) ROOT가 아닐 경우 권한 및 조직 검사
+        if (!roles.contains("ROOT")) {
+            if (!permissionService.hasPermission("USER_UPDATE")) {
+                throw new BusinessException(ErrorCode.ACCESS_DENIED);
+            }
+
+            if (!Objects.equals(user.getOrganization().getOrgId(), currentOrgId)) {
+                throw new BusinessException(ErrorCode.ACCESS_DENIED);
+            }
+        }
+
+        // 2) 로그인 ID 중복 검사 (자기 자신 제외)
         if (requestDto.getUserLoginId() != null &&
                 !requestDto.getUserLoginId().equals(user.getUserLoginId()) &&
                 userRepository.existsByUserLoginId(requestDto.getUserLoginId())) {
             throw new BusinessException(ErrorCode.USER_LOGIN_ID_DUPLICATED);
         }
 
-        // 이메일 중복 검사 (자기 자신 제외)
-        boolean emailTaken = userRepository.existsByEmailAndUserIdNot(requestDto.getEmail(), userId);
-        if (emailTaken) {
+        // 3) 이메일 중복 검사 (자기 자신 제외)
+        if (userRepository.existsByEmailAndUserIdNot(requestDto.getEmail(), targetUserId)) {
             throw new BusinessException(ErrorCode.DUPLICATED_EMAIL);
         }
 
-        // 필드 업데이트
-        user.updateUserInfo(requestDto.getUserLoginId(), requestDto.getUserName(), requestDto.getEmail(), passwordEncoder.encode(requestDto.getPassword()));
+        // 4) 정보 업데이트
+        user.updateUserInfo(
+                requestDto.getUserLoginId(),
+                requestDto.getUserName(),
+                requestDto.getEmail(),
+                passwordEncoder.encode(requestDto.getPassword())
+        );
 
         return UserResponseDto.builder()
                 .userId(user.getUserId())

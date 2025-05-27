@@ -6,6 +6,7 @@ import com.fisa.solra.domain.permission.dto.PermissionResponseDto;
 import com.fisa.solra.domain.permission.entity.Permission;
 import com.fisa.solra.domain.permission.repository.PermissionRepository;
 import com.fisa.solra.global.jwt.JwtTokenProvider;
+import com.fisa.solra.global.security.UserPrincipal;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -47,46 +48,24 @@ public class PermissionService {
 
     // @PreAuthorize에서 사용
     public boolean hasPermission(String permission) {
-        // 1. 세션에서 JWT 토큰 추출
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            throw new BusinessException(ErrorCode.UNAUTHENTICATED);
-        }
-
-        String token = (String) session.getAttribute("jwtToken");
-        if (token == null) {
-            throw new BusinessException(ErrorCode.JWT_TOKEN_NOT_FOUND);
-        }
-
-        // 2. roles 추출
-        List<String> roles;
-        try {
-            roles = jwtTokenProvider.getRoles(token);
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.INVALID_JWT_ROLE_CLAIM);
-        }
-
-        // 3. ROOT는 모든 권한 우회 통과
-        if (roles.contains("ROOT")) {
-            return true;
-        }
-
-        // 역할 추출 및 검사
-        System.out.println("✅ [hasPermission] JWT에서 추출된 ROLE: " + roles + ", 요청 권한: " + permission);
-
-        // 4. SecurityContext에서 권한 확인
+        // 1. SecurityContext에서 인증 정보 조회
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) {
+        if (auth == null || !(auth.getPrincipal() instanceof UserPrincipal)) {
             throw new BusinessException(ErrorCode.SECURITY_CONTEXT_NOT_FOUND);
         }
 
+        // 2. 현재 인증 객체로부터 roles 확인
+        List<String> roles = ((UserPrincipal) auth.getPrincipal()).getRoles();
+        if (roles.contains("ROOT")) {
+            return true; // ROOT는 모든 권한 우회
+        }
+
+        // 3. GrantedAuthority에서 권한 확인
         boolean hasPermission = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals(permission));
 
         if (!hasPermission) {
-            throw new BusinessException(ErrorCode.ROLE_NOT_GRANTED);
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
 
         return true;
