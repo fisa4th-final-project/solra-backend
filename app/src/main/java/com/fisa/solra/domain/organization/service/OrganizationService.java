@@ -4,8 +4,10 @@ package com.fisa.solra.domain.organization.service;
 import com.fisa.solra.domain.organization.dto.OrganizationResponseDto;
 import com.fisa.solra.domain.organization.entity.Organization;
 import com.fisa.solra.domain.organization.repository.OrganizationRepository;
+import com.fisa.solra.domain.permission.service.PermissionService;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
+import com.fisa.solra.global.util.SecurityUtil;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Builder
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 public class OrganizationService {
 
     private final OrganizationRepository organizationRepository;
+    private final PermissionService permissionService;
 
     // 조직 생성 (ROOT 권한 필요)
     @Transactional
@@ -69,33 +73,72 @@ public class OrganizationService {
 
     //조직 상세 조회
     public OrganizationResponseDto getOrganizationById(Long id) {
-        Organization org = organizationRepository.findById(id)
+        // 1) 권한 검사 (예외 기반)
+        permissionService.checkPermission("ORGANIZATION_READ");
+
+        // 2) 대상 조직 조회
+        Organization organization  = organizationRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ORGANIZATION_NOT_FOUND));
 
+        // 3) 조직 일치 여부 확인 (ROOT는 우회)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(SecurityUtil.getOrgId(), organization.getOrgId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 4) 응답 반환
         return OrganizationResponseDto.builder()
-                .orgId(org.getOrgId())
-                .orgName(org.getOrgName())
+                .orgId(organization .getOrgId())
+                .orgName(organization .getOrgName())
                 .build();
     }
     // 조직명 수정
     @Transactional
     public OrganizationResponseDto updateOrganizationName(Long orgId, String newName) {
-        Organization org = organizationRepository.findById(orgId)
+        // 1) 권한 검사
+        permissionService.checkPermission("ORGANIZATION_UPDATE");
+
+        // 2) 조직 조회
+        Organization organization = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ORGANIZATION_NOT_FOUND));
-        org.setOrgName(newName);
-        organizationRepository.flush();
+
+        // 3) 조직 일치 확인 (ROOT는 우회)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(SecurityUtil.getOrgId(), organization.getOrgId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 4) 이름 변경
+        organization.setOrgName(newName);
+
+        // 5) 응답 반환
         return OrganizationResponseDto.builder()
-                .orgId(org.getOrgId())
-                .orgName(org.getOrgName())
+                .orgId(organization.getOrgId())
+                .orgName(organization.getOrgName())
                 .build();
     }
     //조직 삭제
     @Transactional
     public void deleteOrganization(Long orgId) {
-        if (!organizationRepository.existsById(orgId)) {
-            throw new BusinessException(ErrorCode.ORGANIZATION_NOT_FOUND);
+        // 1) 권한 검사
+        permissionService.checkPermission("ORGANIZATION_DELETE");
+
+        // 2) 조직 조회
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ORGANIZATION_NOT_FOUND));
+
+        // 3) 조직 일치 확인 (ROOT는 우회)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(SecurityUtil.getOrgId(), organization.getOrgId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
+
+/*        // 4) 자식 리소스 존재 여부 확인 (부서 또는 사용자)
+        if (organization.hasChildren()) { // 예: 부서 또는 사용자 존재 여부 확인
+            throw new BusinessException(ErrorCode.ORGANIZATION_DELETE_CONFLICT);
+        }*/
+
+        // 4) 삭제 처리
         organizationRepository.deleteById(orgId);
-        organizationRepository.flush();
     }
 }
