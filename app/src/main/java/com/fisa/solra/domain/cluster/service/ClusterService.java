@@ -9,6 +9,7 @@ import com.fisa.solra.domain.organization.repository.OrganizationRepository;
 import com.fisa.solra.global.config.Fabric8K8sConfig;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
+import com.fisa.solra.global.util.SecurityUtil;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,15 +30,26 @@ public class ClusterService {
     public List<ClusterResponseDto> getClusters(Long orgId) {
         List<Cluster> clusters;
 
-        if (orgId != null) {
-            // 조직 ID로 필터링
-            clusters = clusterRepository.findByOrganization_OrgId(orgId);
+        // 1) 권한은 컨트롤러에서 @PreAuthorize("CLUSTER_READ")로 검사됨
+        // 2) 현재 사용자의 조직 ID 조회
+        Long currentOrgId = SecurityUtil.getOrgId();
+        boolean isRoot = SecurityUtil.hasRole("ROOT");
+
+        // 3) 조회 조건 분기
+        if (isRoot) {
+            // ROOT는 모든 조직의 클러스터 조회 가능
+            clusters = (orgId != null)
+                    ? clusterRepository.findByOrganization_OrgId(orgId)
+                    : clusterRepository.findAll();
         } else {
-            // 전체 클러스터 조회
-            clusters = clusterRepository.findAll();
+            // 일반 사용자는 자신의 조직에 속한 클러스터만 조회 가능
+            if (orgId != null && !Objects.equals(orgId, currentOrgId)) {
+                throw new BusinessException(ErrorCode.ACCESS_DENIED);
+            }
+            clusters = clusterRepository.findByOrganization_OrgId(currentOrgId);
         }
 
-        // Entity → DTO 변환
+        // 4) Entity → DTO 변환
         return clusters.stream()
                 .map(ClusterResponseDto::fromEntity)
                 .collect(Collectors.toList());
@@ -45,13 +57,23 @@ public class ClusterService {
 
     // ✅ 클러스터 단일 조회
     public ClusterResponseDto getCluster(Long clusterId) {
+        // 1) 클러스터 조회
         Cluster c = clusterRepository.findById(clusterId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CLUSTER_NOT_FOUND));
+
+        // 2) 조직 일치 검사 (ROOT는 우회)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(c.getOrganization().getOrgId(), SecurityUtil.getOrgId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 3) 응답 반환
         return ClusterResponseDto.fromEntity(c);
     }
 
     // ✅ 클러스터 등록
     public ClusterResponseDto createCluster(ClusterRequestDto dto) {
+
         // 1) name 중복 검사
         if (clusterRepository.existsByName(dto.getName())) {
             throw new BusinessException(ErrorCode.DUPLICATED_CLUSTER_NAME);
@@ -68,26 +90,23 @@ public class ClusterService {
         // 4) DB에 저장
         Cluster saved = clusterRepository.save(dto.toEntity(organization));
 
-/*        // 4) 저장된 엔티티로 Client 생성 & 연결 테스트
-        KubernetesClient client = k8sConfig.buildClient(ClusterRequestDto.fromEntity(saved));
-        try {
-            client.getVersion();  // 실패 시 예외 발생
-        } catch (Exception e) {
-            // 연결 실패하면 저장 롤백
-            throw new BusinessException(ErrorCode.CLUSTER_CONNECTION_FAILED);
-        }*/
-
         // 5) 정상 등록 응답
         return ClusterResponseDto.fromEntity(saved);
     }
 
     // ✅ 클러스터 수정
     public ClusterResponseDto updateCluster(Long clusterId, ClusterRequestDto dto) {
-        // 1) 존재 여부 확인
+        // 1) 기존 클러스터 조회
         Cluster existing = clusterRepository.findById(clusterId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CLUSTER_NOT_FOUND));
 
-        // 2) 중복 검사(name, apiServerUrl)
+        // 2) 조직 일치 검사 (ROOT는 우회)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(existing.getOrganization().getOrgId(), SecurityUtil.getOrgId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 3) 중복 검사(name, apiServerUrl)
         if (dto.getName() != null
                 && !dto.getName().equals(existing.getName())
                 && clusterRepository.existsByName(dto.getName())) {
@@ -99,7 +118,7 @@ public class ClusterService {
             throw new BusinessException(ErrorCode.CLUSTER_APISERVER_DUPLICATE);
         }
 
-        // 3) 변경된 필드가 하나도 없으면 no-change 예외
+        // 4) 변경된 필드가 하나도 없으면 no-change 예외
         boolean noChange =
                 (dto.getName()          == null || Objects.equals(dto.getName(), existing.getName())) &&
                         (dto.getEnv()           == null || Objects.equals(dto.getEnv(), existing.getEnv())) &&
@@ -110,26 +129,25 @@ public class ClusterService {
             throw new BusinessException(ErrorCode.CLUSTER_UPDATE_NO_CHANGE);
         }
 
-        // 4) 실제 엔티티에 업데이트
+        // 5) 실제 엔티티에 업데이트
         existing.update(dto);
         Cluster saved = clusterRepository.save(existing);
-
-/*        // 5) 연결 재검증 (옵션)
-        try {
-            KubernetesClient client = k8sConfig.buildClient(ClusterRequestDto.fromEntity(saved));
-            client.getVersion();
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.CLUSTER_CONNECTION_FAILED);
-        }*/
-
         return ClusterResponseDto.fromEntity(saved);
     }
 
     // ✅클러스터 삭제
     public void delete(Long clusterId) {
-        if (!clusterRepository.existsById(clusterId)) {
-            throw new BusinessException(ErrorCode.CLUSTER_NOT_FOUND);
+        // 1) 클러스터 조회
+        Cluster cluster = clusterRepository.findById(clusterId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CLUSTER_NOT_FOUND));
+
+        // 2) 조직 일치 검사 (ROOT 우회)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(cluster.getOrganization().getOrgId(), SecurityUtil.getOrgId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
+
+        // 3) 삭제 처리
         clusterRepository.deleteById(clusterId);
     }
 
@@ -139,7 +157,13 @@ public class ClusterService {
         Cluster cluster = clusterRepository.findById(clusterId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CLUSTER_NOT_FOUND));
 
-        // 2) Kubernetes Client 생성 및 연결 테스트
+        // 2) 조직 일치 검사 (ROOT 우회)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(cluster.getOrganization().getOrgId(), SecurityUtil.getOrgId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 3) Kubernetes Client 생성 및 연결 테스트
         try {
             KubernetesClient client = k8sConfig.buildClient(ClusterRequestDto.fromEntity(cluster));
             client.getVersion(); // 연결 시도

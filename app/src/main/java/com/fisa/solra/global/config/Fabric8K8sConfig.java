@@ -36,7 +36,7 @@ public class Fabric8K8sConfig {
      */
     public KubernetesClient buildClient(ClusterRequestDto dto) {
         String caCertData = new String(Base64.getDecoder().decode(dto.getCaCert()));
-        String token      = new String(Base64.getDecoder().decode(dto.getSaToken()));
+        String token      = dto.getSaToken();
         String masterUrl  = dto.getApiServerUrl();
 
         log.info("[Fabric8K8sConfig] buildClient → {}", masterUrl);
