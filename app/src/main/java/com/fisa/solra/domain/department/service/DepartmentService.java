@@ -127,25 +127,37 @@ public class DepartmentService {
     // 부서명 수정
     @Transactional
     public DepartmentResponseDto updateDepartmentName(Long deptId, DepartmentRequestDto requestDto) {
+        // 1) 권한 검사
+        permissionService.checkPermission("DEPARTMENT_UPDATE");
+
+        // 2) 부서 조회
         Department dept = departmentRepository.findById(deptId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.DEPARTMENT_NOT_FOUND));
 
+        // 3) 조직 일치 확인 (ROOT 우회 허용)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(dept.getOrganization().getOrgId(), SecurityUtil.getOrgId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 4) 유효성 검사
         String newName = requestDto.getDeptName();
         if (newName == null || newName.isBlank()) {
             throw new BusinessException(ErrorCode.INVALID_INPUT);
         }
         newName = newName.trim();
 
-        // 중복 검사: 같은 조직 내 동일한 이름이 이미 존재하는지 확인
+        // 5) 중복 부서명 검사 (같은 조직 내, 자기 자신 제외)
         Long orgId = dept.getOrganization().getOrgId();
         boolean exists = departmentRepository.existsByOrganizationOrgIdAndDeptName(orgId, newName);
         if (exists && !dept.getDeptName().equals(newName)) {
             throw new BusinessException(ErrorCode.DUPLICATED_DEPARTMENT_NAME);
         }
 
+        // 5) 이름 변경
         dept.setDeptName(newName);
-        departmentRepository.flush();
 
+        // 6) 응답 반환
         return DepartmentResponseDto.builder()
                 .deptId(dept.getDeptId())
                 .orgId(dept.getOrganization().getOrgId())
@@ -156,10 +168,20 @@ public class DepartmentService {
     // 부서 삭제
     @Transactional
     public void deleteDepartment(Long deptId) {
-        if (!departmentRepository.existsById(deptId)) {
-            throw new BusinessException(ErrorCode.DEPARTMENT_NOT_FOUND);
+        // 1) 권한 검사
+        permissionService.checkPermission("DEPARTMENT_DELETE");
+
+        // 2) 부서 조회
+        Department dept = departmentRepository.findById(deptId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.DEPARTMENT_NOT_FOUND));
+
+        // 3) 조직 일치 검사 (ROOT는 우회)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(dept.getOrganization().getOrgId(), SecurityUtil.getOrgId())) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
+
+        // 4) 삭제 처리
         departmentRepository.deleteById(deptId);
-        departmentRepository.flush();
     }
 }
