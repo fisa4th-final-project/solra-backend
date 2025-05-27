@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class ServiceController {
 
     // ✅ 네임스페이스 내 전체 서비스 목록 조회
     @GetMapping
+    @PreAuthorize("@permissionService.checkPermission('SERVICE_READ')")
     public ResponseEntity<ApiResponse<List<ServiceResponseDto>>> list(
             @PathVariable Long clusterId,
             @PathVariable String namespace) {
@@ -34,6 +36,7 @@ public class ServiceController {
 
     // ✅ 단일 서비스 상세 조회
     @GetMapping("/{name}")
+    @PreAuthorize("@permissionService.checkPermission('SERVICE_READ')")
     public ResponseEntity<ApiResponse<ServiceResponseDto>> get(
             @PathVariable Long clusterId,
             @PathVariable String namespace,
@@ -48,6 +51,7 @@ public class ServiceController {
 
     // ✅ 서비스 생성
     @PostMapping
+    @PreAuthorize("@permissionService.checkPermission('SERVICE_CREATE')")
     public ResponseEntity<ApiResponse<ServiceResponseDto>> create(
             @PathVariable Long clusterId,
             @PathVariable String namespace,
@@ -61,6 +65,7 @@ public class ServiceController {
 
     // ✅ 서비스 수정
     @PatchMapping("/{name}")
+    @PreAuthorize("@permissionService.checkPermission('SERVICE_UPDATE')")
     public ResponseEntity<ApiResponse<ServiceResponseDto>> update(
             @PathVariable Long clusterId,
             @PathVariable String namespace,
@@ -76,6 +81,7 @@ public class ServiceController {
 
     // ✅ 서비스 삭제
     @DeleteMapping("/{name}")
+    @PreAuthorize("@permissionService.checkPermission('SERVICE_DELETE')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long clusterId,
             @PathVariable String namespace,
