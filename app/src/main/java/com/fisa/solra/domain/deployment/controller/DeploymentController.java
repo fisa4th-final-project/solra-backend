@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class DeploymentController {
 
     // ✅ 디플로이먼트 리스트 조회
     @GetMapping
+    @PreAuthorize("@permissionService.checkPermission('DEPLOYMENT_READ')")
     public ResponseEntity<ApiResponse<List<DeploymentResponseDto>>> list(
             @PathVariable Long clusterId,
             @PathVariable String namespace) {
@@ -35,6 +37,7 @@ public class DeploymentController {
 
     // ✅ 디플로이먼트 상세 조회
     @GetMapping("/{name}")
+    @PreAuthorize("@permissionService.checkPermission('DEPLOYMENT_READ')")
     public ResponseEntity<ApiResponse<DeploymentResponseDto>> get(
             @PathVariable Long clusterId,
             @PathVariable String namespace,
@@ -48,6 +51,7 @@ public class DeploymentController {
 
     // ✅ 디플로이먼트 생성
     @PostMapping
+    @PreAuthorize("@permissionService.checkPermission('DEPLOYMENT_CREATE')")
     public ResponseEntity<ApiResponse<DeploymentCreateResponseDto>> create(
             @PathVariable Long clusterId,
             @PathVariable String namespace,
@@ -66,6 +70,7 @@ public class DeploymentController {
 
     // ✅ 디플로이먼트 수정
     @PatchMapping("/{name}")
+    @PreAuthorize("@permissionService.checkPermission('DEPLOYMENT_UPDATE')")
     public ResponseEntity<ApiResponse<DeploymentResponseDto>> update(
             @PathVariable Long clusterId,
             @PathVariable String namespace,
@@ -81,6 +86,7 @@ public class DeploymentController {
 
     // ✅ 디플로이먼트 삭제
     @DeleteMapping("/{name}")
+    @PreAuthorize("@permissionService.checkPermission('DEPLOYMENT_DELETE')")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable Long clusterId,
             @PathVariable String namespace,
