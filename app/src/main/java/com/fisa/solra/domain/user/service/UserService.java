@@ -119,37 +119,34 @@ public class UserService {
     // 사용자 수정
     @Transactional
     public UserResponseDto updateUser(Long targetUserId, UserUpdateRequestDto requestDto) {
-        Long currentOrgId  = SecurityUtil.getOrgId();
-        List<String> roles = SecurityUtil.getRoles();
+        Long currentOrgId = SecurityUtil.getOrgId();
 
-        // 대상 사용자 조회 (권한/검증 공통 사용)
+        // 1) 권한 검사 (ROOT 우회 포함됨)
+        permissionService.checkPermission("USER_UPDATE");
+
+        // 2) 대상 사용자 조회
         User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // 1) ROOT가 아닐 경우 권한 및 조직 검사
-        if (!roles.contains("ROOT")) {
-            if (!permissionService.hasPermission("USER_UPDATE")) {
-                throw new BusinessException(ErrorCode.ACCESS_DENIED);
-            }
-
-            if (!Objects.equals(user.getOrganization().getOrgId(), currentOrgId)) {
-                throw new BusinessException(ErrorCode.ACCESS_DENIED);
-            }
+        // 3) 조직 일치 여부 확인 (ROOT는 생략)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(user.getOrganization().getOrgId(), currentOrgId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
 
-        // 2) 로그인 ID 중복 검사 (자기 자신 제외)
+        // 4) 로그인 ID 중복 검사 (자기 자신 제외)
         if (requestDto.getUserLoginId() != null &&
                 !requestDto.getUserLoginId().equals(user.getUserLoginId()) &&
                 userRepository.existsByUserLoginId(requestDto.getUserLoginId())) {
             throw new BusinessException(ErrorCode.USER_LOGIN_ID_DUPLICATED);
         }
 
-        // 3) 이메일 중복 검사 (자기 자신 제외)
+        // 5) 이메일 중복 검사 (자기 자신 제외)
         if (userRepository.existsByEmailAndUserIdNot(requestDto.getEmail(), targetUserId)) {
             throw new BusinessException(ErrorCode.DUPLICATED_EMAIL);
         }
 
-        // 4) 정보 업데이트
+        // 6) 정보 업데이트
         user.updateUserInfo(
                 requestDto.getUserLoginId(),
                 requestDto.getUserName(),
@@ -157,6 +154,7 @@ public class UserService {
                 passwordEncoder.encode(requestDto.getPassword())
         );
 
+        // 7) 응답 생성
         return UserResponseDto.builder()
                 .userId(user.getUserId())
                 .userLoginId(user.getUserLoginId())
@@ -168,11 +166,24 @@ public class UserService {
     }
 
     // 사용자 삭제
-    public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId)
+    public void deleteUser(Long targetUserId) {
+        Long currentOrgId = SecurityUtil.getOrgId();
+
+        // 1) 권한 검사 (ROOT 포함 처리됨)
+        permissionService.checkPermission("USER_DELETE");
+
+        // 2) 대상 사용자 조회
+        User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        userRepository.delete(user);
+        // 3) 조직 일치 여부 확인 (ROOT는 우회)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(targetUser.getOrganization().getOrgId(), currentOrgId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 4) 삭제 처리
+        userRepository.delete(targetUser);
     }
 
     // 사용자 전체 조회

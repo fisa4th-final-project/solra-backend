@@ -47,7 +47,7 @@ public class PermissionService {
     }
 
     // @PreAuthorize에서 사용
-    public boolean hasPermission(String permission) {
+    public void checkPermission(String permission) {
         // 1. SecurityContext에서 인증 정보 조회
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof UserPrincipal)) {
@@ -57,7 +57,7 @@ public class PermissionService {
         // 2. 현재 인증 객체로부터 roles 확인
         List<String> roles = ((UserPrincipal) auth.getPrincipal()).getRoles();
         if (roles.contains("ROOT")) {
-            return true; // ROOT는 모든 권한 우회
+            return; // ✅ ROOT는 모든 권한 우회
         }
 
         // 3. GrantedAuthority에서 권한 확인
@@ -67,8 +67,6 @@ public class PermissionService {
         if (!hasPermission) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
-
-        return true;
     }
     //권한 생성
     @Transactional

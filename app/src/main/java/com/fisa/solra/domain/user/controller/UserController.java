@@ -27,7 +27,7 @@ public class UserController {
     private final JwtTokenProvider jwtTokenProvider;
 
     // 사용자 생성
-    @PreAuthorize("@permissionService.hasPermission('USER_CREATE')")
+    @PreAuthorize("@permissionService.checkPermission('USER_CREATE')")
     @PostMapping
     public ApiResponse<UserResponseDto> createUser(@RequestBody @Valid UserCreateRequestDto request){
         UserResponseDto userResponseDto = userService.createUser(request);
@@ -53,7 +53,7 @@ public class UserController {
     }
 
     // 사용자 목록
-    @PreAuthorize("@permissionService.hasPermission('USER_READ')")
+    @PreAuthorize("@permissionService.checkPermission('USER_READ')")
     @GetMapping
     public ApiResponse<Page<UserResponseDto>> getAllUsers(
             Pageable pageable,
@@ -65,7 +65,7 @@ public class UserController {
     }
 
     // 사용자 상세 조회
-    @PreAuthorize("@permissionService.hasPermission('USER_READ')")
+    @PreAuthorize("@permissionService.checkPermission('USER_READ')")
     @GetMapping("/{userId}")
     public ApiResponse<UserResponseDto> getUse(@PathVariable Long userId) {
         UserResponseDto userResponseDto = userService.getUserById(userId);
@@ -73,7 +73,7 @@ public class UserController {
     }
 
     // 사용자 정보 기반 검색
-    @PreAuthorize("@permissionService.hasPermission('USER_READ')")
+    @PreAuthorize("@permissionService.checkPermission('USER_READ')")
     @GetMapping("/search")
     public ApiResponse<List<UserResponseDto>> searchUsers(
             @RequestParam(required = false) String userName,
