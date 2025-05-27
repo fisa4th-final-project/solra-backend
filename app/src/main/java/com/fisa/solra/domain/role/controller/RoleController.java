@@ -7,6 +7,7 @@ import com.fisa.solra.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class RoleController {
 
     // 역할 생성
     @PostMapping
+    @PreAuthorize("@permissionService.checkPermission('ROLE_CREATE')")
     public ResponseEntity<ApiResponse<RoleResponseDto>> createRole(
             @RequestBody RoleRequestDto requestDto) {
         RoleResponseDto dto = roleService.createRole(requestDto);
@@ -31,6 +33,7 @@ public class RoleController {
 
     // 전체 역할 조회
     @GetMapping
+    @PreAuthorize("@permissionService.checkPermission('ROLE_READ')")
     public ResponseEntity<ApiResponse<List<RoleResponseDto>>> getRoles() {
         List<RoleResponseDto> list = roleService.getAllRoles();
         return ResponseEntity.ok(ApiResponse.success(list, "역할 목록 조회 성공"));
@@ -38,6 +41,7 @@ public class RoleController {
 
     // 단일 역할 조회
     @GetMapping("/{roleId}")
+    @PreAuthorize("@permissionService.checkPermission('ROLE_READ')")
     public ResponseEntity<ApiResponse<RoleResponseDto>> getRole(
             @PathVariable Long roleId) {
         RoleResponseDto dto = roleService.getRoleById(roleId);
@@ -47,6 +51,7 @@ public class RoleController {
     // 역할 수정
     // 역할 수정 (설명만)
     @PatchMapping("/{roleId}")
+    @PreAuthorize("@permissionService.checkPermission('ROLE_UPDATE')")
     public ResponseEntity<ApiResponse<RoleResponseDto>> updateRole(
             @PathVariable Long roleId,
             @RequestBody RoleRequestDto requestDto) {
@@ -56,6 +61,7 @@ public class RoleController {
 
     // 역할 삭제
     @DeleteMapping("/{roleId}")
+    @PreAuthorize("@permissionService.checkPermission('ROLE_DELETE')")
     public ResponseEntity<ApiResponse<Void>> deleteRole(
             @PathVariable Long roleId) {
         roleService.deleteRole(roleId);
