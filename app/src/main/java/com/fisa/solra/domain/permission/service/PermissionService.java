@@ -6,6 +6,8 @@ import com.fisa.solra.domain.permission.dto.PermissionResponseDto;
 import com.fisa.solra.domain.permission.entity.Permission;
 import com.fisa.solra.domain.permission.repository.PermissionRepository;
 import com.fisa.solra.global.jwt.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,8 +16,12 @@ import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +29,7 @@ import java.util.stream.Collectors;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Service("permissionService")
 @RequiredArgsConstructor
 public class PermissionService {
 
@@ -41,20 +47,49 @@ public class PermissionService {
 
     // @PreAuthorize에서 사용
     public boolean hasPermission(String permission) {
-        Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getCredentials() == null) return false;
+        // 1. 세션에서 JWT 토큰 추출
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
 
-        String token = auth.getCredentials().toString();
-        String role = jwtTokenProvider.getRole(token);
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            throw new BusinessException(ErrorCode.UNAUTHENTICATED);
+        }
 
-        // ✅ ROOT는 무조건 통과
-        if ("ROOT".equalsIgnoreCase(role)) {
+        String token = (String) session.getAttribute("jwtToken");
+        if (token == null) {
+            throw new BusinessException(ErrorCode.JWT_TOKEN_NOT_FOUND);
+        }
+
+        // 2. roles 추출
+        List<String> roles;
+        try {
+            roles = jwtTokenProvider.getRoles(token);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.INVALID_JWT_ROLE_CLAIM);
+        }
+
+        // 3. ROOT는 모든 권한 우회 통과
+        if (roles.contains("ROOT")) {
             return true;
         }
 
-        // ✅ 그 외는 권한 이름 매칭 검사
-        return auth.getAuthorities().stream()
+        // 역할 추출 및 검사
+        System.out.println("✅ [hasPermission] JWT에서 추출된 ROLE: " + roles + ", 요청 권한: " + permission);
+
+        // 4. SecurityContext에서 권한 확인
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            throw new BusinessException(ErrorCode.SECURITY_CONTEXT_NOT_FOUND);
+        }
+
+        boolean hasPermission = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals(permission));
+
+        if (!hasPermission) {
+            throw new BusinessException(ErrorCode.ROLE_NOT_GRANTED);
+        }
+
+        return true;
     }
     //권한 생성
     @Transactional

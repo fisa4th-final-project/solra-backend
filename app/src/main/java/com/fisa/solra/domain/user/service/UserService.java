@@ -12,14 +12,14 @@ import com.fisa.solra.domain.user.entity.User;
 import com.fisa.solra.domain.user.repository.UserRepository;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
-import com.fisa.solra.global.response.ApiResponse;
+import com.fisa.solra.global.util.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
+
 
 import java.util.List;
 
@@ -116,6 +116,8 @@ public class UserService {
     // 사용자 수정
     @Transactional
     public UserResponseDto updateUser(Long userId, UserUpdateRequestDto requestDto) {
+
+
         // 사용자 존재 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));

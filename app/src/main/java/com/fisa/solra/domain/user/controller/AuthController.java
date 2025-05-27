@@ -1,11 +1,12 @@
 package com.fisa.solra.domain.user.controller;
 
-import com.fisa.solra.domain.permission.entity.Permission;
 import com.fisa.solra.domain.permission.service.PermissionService;
+import com.fisa.solra.domain.role.entity.Role;
 import com.fisa.solra.domain.user.dto.LoginRequestDto;
 import com.fisa.solra.domain.user.dto.UserLoginInfo;
 import com.fisa.solra.domain.user.dto.UserResponseDto;
 import com.fisa.solra.domain.user.service.UserService;
+import com.fisa.solra.global.security.UserPrincipal;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
 import com.fisa.solra.global.jwt.JwtTokenProvider;
@@ -21,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -39,20 +41,17 @@ public class AuthController {
         // 사용자 검증 + 로그인 정보 조회
         UserLoginInfo loginInfo = userService.login(request.getUserLoginId(), request.getPassword());
 
+        List<String> roleNames = loginInfo.getRoles().stream()
+                .map(Role::getRoleName)
+                .collect(Collectors.toList());
+
         // JWT 생성
         String token = jwtTokenProvider.generateToken(
                 loginInfo.getUserId(),
                 loginInfo.getOrgId(),
                 loginInfo.getDeptId(),
-                loginInfo.getRoles().toString()
+                roleNames
         );
-
-        // Spring Security 인증 객체 등록
-        List<GrantedAuthority> authorities = permissionService.getAuthorities(loginInfo.getUserId());
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(loginInfo.getUserId(), null, authorities);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
         // 세션에 저장
         session.setAttribute("jwtToken", token);
 
