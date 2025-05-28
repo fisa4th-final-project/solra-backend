@@ -1,6 +1,4 @@
-// src/main/java/com/fisa/solra/domain/deployment/service/DeploymentService.java
 package com.fisa.solra.domain.deployment.service;
-
 
 import com.fisa.solra.domain.deployment.dto.DeploymentCreateRequestDto;
 import com.fisa.solra.domain.deployment.dto.DeploymentCreateResponseDto;
@@ -9,6 +7,7 @@ import com.fisa.solra.domain.deployment.dto.DeploymentResponseDto;
 import com.fisa.solra.global.config.KubernetesClientProvider;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
+import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.StatusDetails;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -87,7 +86,9 @@ public class DeploymentService {
                 .addNewContainer()
                 .withName(dto.getContainer().getName())
                 .withImage(dto.getContainer().getImage())
-                .addNewPort().withContainerPort(dto.getContainer().getPort()).endPort()
+                .addNewPort()
+                .withContainerPort(dto.getContainer().getPort())
+                .endPort()
                 .endContainer()
                 .endSpec()
                 .endTemplate()
@@ -130,28 +131,59 @@ public class DeploymentService {
             throw new BusinessException(ErrorCode.DEPLOYMENT_NOT_FOUND);
         }
 
-        // (2) replicas 필드만 수정
+        // (2) edit() 로 안전하게 수정
         Deployment updated = client.apps().deployments()
                 .inNamespace(namespace)
                 .withName(name)
-                .edit(d -> new DeploymentBuilder(d)
-                        .editSpec()
-                        .withReplicas(dto.getReplicas())
-                        .endSpec()
-                        .build()
-                );
+                .edit(d -> {
+                    // replicas
+                    if (dto.getReplicas() != null) {
+                        d.getSpec().setReplicas(dto.getReplicas());
+                    }
+
+                    // 컨테이너 수정
+                    if (dto.getContainer() != null) {
+                        // PodTemplate의 PodSpec
+                        var podSpec = d.getSpec().getTemplate().getSpec();
+                        // 첫 번째 컨테이너 가져오기
+                        var ctr = podSpec.getContainers().get(0);
+
+                        // image
+                        if (dto.getContainer().getImage() != null) {
+                            ctr.setImage(dto.getContainer().getImage());
+                        }
+                        // port
+                        if (dto.getContainer().getPort() != null) {
+                            // 기존 포트 모두 삭제
+                            ctr.getPorts().clear();
+                            // 새 포트 추가
+                            ctr.getPorts().add(
+                                    new ContainerPortBuilder()
+                                            .withContainerPort(dto.getContainer().getPort())
+                                            .build()
+                            );
+                        }
+                        // **컨테이너 이름은 머지 키(key)** 이므로,
+                        // 이름 자체를 바꾸면 merge가 작동하지 않습니다.
+                        // 필요하다면 롤링 업데이트 전략으로 새 Deployment를 생성하세요.
+                    }
+
+                    return d;
+                });
+
         if (updated == null) {
             throw new BusinessException(ErrorCode.DEPLOYMENT_UPDATE_FAILED);
         }
 
+        // (3) 변경된 상태를 DTO로 반환
         return DeploymentResponseDto.from(updated);
     }
+
 
     // ✅ 디플로이먼트 삭제
     public void deleteDeployment(Long clusterId, String namespace, String name) {
         KubernetesClient client = clientProvider.getClient(clusterId);
 
-        // (1) 존재 여부 확인
         Deployment existing = client.apps().deployments()
                 .inNamespace(namespace)
                 .withName(name)
@@ -160,7 +192,6 @@ public class DeploymentService {
             throw new BusinessException(ErrorCode.DEPLOYMENT_NOT_FOUND);
         }
 
-        // (2) 삭제
         List<StatusDetails> status = client
                 .resource(existing)
                 .delete();
