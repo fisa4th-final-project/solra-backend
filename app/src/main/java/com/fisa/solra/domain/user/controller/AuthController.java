@@ -55,6 +55,12 @@ public class AuthController {
         // 세션에 저장
         session.setAttribute("jwtToken", token);
 
+        // 🔥 인증 객체 등록 - 없으면 SecurityFilterChain에서 403 뜸
+        List<GrantedAuthority> authorities = permissionService.getAuthorities(loginInfo.getUserId());
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(loginInfo.getUserId(), null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         return ApiResponse.success(loginInfo, "로그인 성공");
     }
 
