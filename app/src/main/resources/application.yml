@@ -29,3 +29,8 @@ jwt:
 
 server:
     port: 8080
+    servlet:
+        session:
+            cookie:
+                same-site: none
+                secure: false
