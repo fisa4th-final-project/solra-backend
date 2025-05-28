@@ -14,7 +14,7 @@ public class AuthUtil {
     public static void assertRoot(HttpSession session, JwtTokenProvider jwtTokenProvider) {
         String token = (String) session.getAttribute("jwtToken");
 
-        if (token == null || !"ROOT".equals(jwtTokenProvider.getRole(token))) {
+        if (token == null || !"ROOT".equals(jwtTokenProvider.getRoles(token))) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
     }

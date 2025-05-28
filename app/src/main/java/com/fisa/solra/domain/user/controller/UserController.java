@@ -27,6 +27,7 @@ public class UserController {
     private final JwtTokenProvider jwtTokenProvider;
 
     // 사용자 생성
+    @PreAuthorize("@permissionService.checkPermission('USER_CREATE')")
     @PostMapping
     public ApiResponse<UserResponseDto> createUser(@RequestBody @Valid UserCreateRequestDto request){
         UserResponseDto userResponseDto = userService.createUser(request);
@@ -40,9 +41,6 @@ public class UserController {
             @RequestBody @Valid UserUpdateRequestDto request,
             HttpSession session){
 
-        // ROOT 권한 체크
-        //AuthUtil.assertRoot(session, jwtTokenProvider);
-
         UserResponseDto userResponseDto = userService.updateUser(userId, request);
         return ApiResponse.success(userResponseDto, "사용자 정보 수정 완료");
     }
@@ -55,6 +53,7 @@ public class UserController {
     }
 
     // 사용자 목록
+    @PreAuthorize("@permissionService.checkPermission('USER_READ')")
     @GetMapping
     public ApiResponse<Page<UserResponseDto>> getAllUsers(
             Pageable pageable,
@@ -66,6 +65,7 @@ public class UserController {
     }
 
     // 사용자 상세 조회
+    @PreAuthorize("@permissionService.checkPermission('USER_READ')")
     @GetMapping("/{userId}")
     public ApiResponse<UserResponseDto> getUse(@PathVariable Long userId) {
         UserResponseDto userResponseDto = userService.getUserById(userId);
@@ -73,6 +73,7 @@ public class UserController {
     }
 
     // 사용자 정보 기반 검색
+    @PreAuthorize("@permissionService.checkPermission('USER_READ')")
     @GetMapping("/search")
     public ApiResponse<List<UserResponseDto>> searchUsers(
             @RequestParam(required = false) String userName,

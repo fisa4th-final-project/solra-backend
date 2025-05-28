@@ -37,18 +37,23 @@ public class JwtSessionAuthenticationFilter extends OncePerRequestFilter {
         HttpSession session = request.getSession(false);
 
         if (session != null) {
-            String jwt = (String) session.getAttribute("jwtToken");
+            String token = (String) session.getAttribute("jwtToken");
 
             // jwt 유효성 검사
-            if (jwt != null && jwtTokenProvider.validateToken(jwt)) {
-                Long userId = jwtTokenProvider.getUserId(jwt);
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                Long userId = jwtTokenProvider.getUserId(token);
+                Long orgId = jwtTokenProvider.getOrgId(token);
+                Long deptId = jwtTokenProvider.getDeptId(token);
+                List<String> roles = jwtTokenProvider.getRoles(token);
 
                 // DB에서 권한 조회
                 List<GrantedAuthority> authorities = permissionService.getAuthorities(userId);
 
+                UserPrincipal principal = new UserPrincipal(userId, orgId, deptId, roles, authorities);
+
                 // 인증 객체 생성 및 SecurityContext에 저장
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                        new UsernamePasswordAuthenticationToken(principal, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

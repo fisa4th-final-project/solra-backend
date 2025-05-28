@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class OrganizationController {
     private final OrganizationService organizationService;
 
     @PostMapping
+    @PreAuthorize("@permissionService.checkPermission('ORGANIZATION_CREATE')")
     public ResponseEntity<ApiResponse<OrganizationResponseDto>> createOrganization(
             @RequestBody OrganizationRequestDto requestDto
     ) {
@@ -36,6 +38,7 @@ public class OrganizationController {
 
     // 전체 조회
     @GetMapping
+    @PreAuthorize("@permissionService.checkPermission('ORGANIZATION_READ')")
     public ResponseEntity<ApiResponse<List<OrganizationResponseDto>>> getAllOrganizations() {
         List<OrganizationResponseDto> list = organizationService.getAllOrganizations();
         return ResponseEntity.ok(ApiResponse.success(list, "조직 목록 조회 성공")

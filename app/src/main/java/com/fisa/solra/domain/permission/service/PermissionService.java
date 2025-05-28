@@ -6,14 +6,15 @@ import com.fisa.solra.domain.permission.dto.PermissionResponseDto;
 import com.fisa.solra.domain.permission.entity.Permission;
 import com.fisa.solra.domain.permission.repository.PermissionRepository;
 import com.fisa.solra.global.jwt.JwtTokenProvider;
+import com.fisa.solra.global.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Service("permissionService")
 @RequiredArgsConstructor
 public class PermissionService {
 
@@ -40,21 +41,26 @@ public class PermissionService {
     }
 
     // @PreAuthorize에서 사용
-    public boolean hasPermission(String permission) {
-        Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getCredentials() == null) return false;
-
-        String token = auth.getCredentials().toString();
-        String role = jwtTokenProvider.getRole(token);
-
-        // ✅ ROOT는 무조건 통과
-        if ("ROOT".equalsIgnoreCase(role)) {
-            return true;
+    public void checkPermission(String permission) {
+        // 1. SecurityContext에서 인증 정보 조회
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof UserPrincipal)) {
+            throw new BusinessException(ErrorCode.SECURITY_CONTEXT_NOT_FOUND);
         }
 
-        // ✅ 그 외는 권한 이름 매칭 검사
-        return auth.getAuthorities().stream()
+        // 2. 현재 인증 객체로부터 roles 확인
+        List<String> roles = ((UserPrincipal) auth.getPrincipal()).getRoles();
+        if (roles.contains("ROOT")) {
+            return; // ✅ ROOT는 모든 권한 우회
+        }
+
+        // 3. GrantedAuthority에서 권한 확인
+        boolean hasPermission = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals(permission));
+
+        if (!hasPermission) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
     }
     //권한 생성
     @Transactional

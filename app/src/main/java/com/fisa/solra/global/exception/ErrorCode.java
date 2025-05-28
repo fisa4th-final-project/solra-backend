@@ -10,6 +10,10 @@ public enum ErrorCode {
     UNAUTHENTICATED(1001, HttpStatus.UNAUTHORIZED, "로그인 상태가 아닙니다. (세션 없음 또는 만료)"),
     INVALID_CREDENTIALS(1002, HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 일치하지 않습니다."),
     ACCESS_DENIED(1003, HttpStatus.FORBIDDEN, "이 작업을 수행할 권한이 없습니다."),
+    JWT_TOKEN_NOT_FOUND(1004, HttpStatus.UNAUTHORIZED, "세션에 JWT 토큰이 존재하지 않습니다."),
+    INVALID_JWT_ROLE_CLAIM(1005, HttpStatus.UNAUTHORIZED, "JWT에서 역할 정보를 읽을 수 없습니다."),
+    SECURITY_CONTEXT_NOT_FOUND(1006, HttpStatus.UNAUTHORIZED, "인증 정보가 존재하지 않습니다. (SecurityContext 비어 있음)"),
+    ROLE_NOT_GRANTED(1007, HttpStatus.FORBIDDEN, "요청한 작업에 필요한 역할이 없습니다."),
 
     // ✅ 2000번대: 사용자
     DUPLICATED_LOGIN_ID(2001, HttpStatus.BAD_REQUEST, "이미 존재하는 로그인 ID입니다."),

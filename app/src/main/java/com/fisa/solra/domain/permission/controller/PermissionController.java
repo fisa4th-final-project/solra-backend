@@ -7,6 +7,7 @@ import com.fisa.solra.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class PermissionController {
 
     //권한 생성
     @PostMapping
+    @PreAuthorize("@permissionService.checkPermission('PERMISSION_CREATE')")
     public ResponseEntity<ApiResponse<PermissionResponseDto>> createPermission(
             @RequestBody PermissionRequestDto requestDto) {
         PermissionResponseDto dto = permissionService.createPermission(requestDto);
@@ -30,6 +32,7 @@ public class PermissionController {
 
     //권한 전체 조회
     @GetMapping
+    @PreAuthorize("@permissionService.checkPermission('PERMISSION_READ')")
     public ResponseEntity<ApiResponse<List<PermissionResponseDto>>> getPermissions() {
         List<PermissionResponseDto> list = permissionService.getAllPermissions();
         return ResponseEntity.ok(ApiResponse.success(list, "권한 목록 조회 성공"));
@@ -37,6 +40,7 @@ public class PermissionController {
 
     //권한 설명 수정
     @PatchMapping("/{permissionId}")
+    @PreAuthorize("@permissionService.checkPermission('PERMISSION_UPDATE')")
     public ResponseEntity<ApiResponse<PermissionResponseDto>> updatePermission(
             @PathVariable Long permissionId,
             @RequestBody PermissionRequestDto requestDto) {
@@ -46,6 +50,7 @@ public class PermissionController {
 
     //권한 삭제
     @DeleteMapping("/{permissionId}")
+    @PreAuthorize("@permissionService.checkPermission('PERMISSION_DELETE')")
     public ResponseEntity<ApiResponse<Void>> deletePermission(
             @PathVariable Long permissionId) {
         permissionService.deletePermission(permissionId);

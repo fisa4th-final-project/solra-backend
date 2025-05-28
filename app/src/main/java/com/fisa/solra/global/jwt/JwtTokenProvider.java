@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtTokenProvider {
@@ -29,7 +30,7 @@ public class JwtTokenProvider {
     }
 
     // 1. JWT 생성
-    public String generateToken(Long userId, Long orgId, Long deptId, String role) {
+    public String generateToken(Long userId, Long orgId, Long deptId, List<String> roles) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMillis);
 
@@ -37,7 +38,7 @@ public class JwtTokenProvider {
                 .setSubject(String.valueOf(userId))            // sub = 사용자 ID
                 .claim("orgId", orgId)                      // 사용자 조직 정보
                 .claim("deptId", deptId)                    // 사용자 부서 정보
-                .claim("role", role)                        // 사용자 역할
+                .claim("roles", roles)                        // 사용자 역할
                 .setIssuedAt(now)                              // 토큰 발급 시각
                 .setExpiration(expiry)                         // 토큰 만료 시각
                 .signWith(key, SignatureAlgorithm.HS256)       // 비밀키로 서명
@@ -71,9 +72,10 @@ public class JwtTokenProvider {
         return getClaims(token).get("deptId", Long.class);
     }
 
-    public String getRole(String token) {
-        return getClaims(token).get("role", String.class);
+    public List<String> getRoles(String token) {
+        return getClaims(token).get("roles", List.class);
     }
+
 
     // 내부적으로 Claims(토큰 내용) 파싱
     private Claims getClaims(String token) {

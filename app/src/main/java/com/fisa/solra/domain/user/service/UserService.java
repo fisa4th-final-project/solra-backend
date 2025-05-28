@@ -4,6 +4,7 @@ import com.fisa.solra.domain.department.entity.Department;
 import com.fisa.solra.domain.department.repository.DepartmentRepository;
 import com.fisa.solra.domain.organization.entity.Organization;
 import com.fisa.solra.domain.organization.repository.OrganizationRepository;
+import com.fisa.solra.domain.permission.service.PermissionService;
 import com.fisa.solra.domain.user.dto.UserCreateRequestDto;
 import com.fisa.solra.domain.user.dto.UserLoginInfo;
 import com.fisa.solra.domain.user.dto.UserResponseDto;
@@ -12,16 +13,17 @@ import com.fisa.solra.domain.user.entity.User;
 import com.fisa.solra.domain.user.repository.UserRepository;
 import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
-import com.fisa.solra.global.response.ApiResponse;
+import com.fisa.solra.global.util.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
+
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,7 @@ public class UserService {
     private final OrganizationRepository organizationRepository;
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PermissionService permissionService;
 
     public UserLoginInfo login(String userLoginId, String password) {
         User user = userRepository.findByUserLoginId(userLoginId)
@@ -115,27 +118,43 @@ public class UserService {
 
     // 사용자 수정
     @Transactional
-    public UserResponseDto updateUser(Long userId, UserUpdateRequestDto requestDto) {
-        // 사용자 존재 확인
-        User user = userRepository.findById(userId)
+    public UserResponseDto updateUser(Long targetUserId, UserUpdateRequestDto requestDto) {
+        Long currentOrgId = SecurityUtil.getOrgId();
+
+        // 1) 권한 검사 (ROOT 우회 포함됨)
+        permissionService.checkPermission("USER_UPDATE");
+
+        // 2) 대상 사용자 조회
+        User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // userLoginId 중복 검사 (현재 user 제외)
+        // 3) 조직 일치 여부 확인 (ROOT는 생략)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(user.getOrganization().getOrgId(), currentOrgId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 4) 로그인 ID 중복 검사 (자기 자신 제외)
         if (requestDto.getUserLoginId() != null &&
                 !requestDto.getUserLoginId().equals(user.getUserLoginId()) &&
                 userRepository.existsByUserLoginId(requestDto.getUserLoginId())) {
             throw new BusinessException(ErrorCode.USER_LOGIN_ID_DUPLICATED);
         }
 
-        // 이메일 중복 검사 (자기 자신 제외)
-        boolean emailTaken = userRepository.existsByEmailAndUserIdNot(requestDto.getEmail(), userId);
-        if (emailTaken) {
+        // 5) 이메일 중복 검사 (자기 자신 제외)
+        if (userRepository.existsByEmailAndUserIdNot(requestDto.getEmail(), targetUserId)) {
             throw new BusinessException(ErrorCode.DUPLICATED_EMAIL);
         }
 
-        // 필드 업데이트
-        user.updateUserInfo(requestDto.getUserLoginId(), requestDto.getUserName(), requestDto.getEmail(), passwordEncoder.encode(requestDto.getPassword()));
+        // 6) 정보 업데이트
+        user.updateUserInfo(
+                requestDto.getUserLoginId(),
+                requestDto.getUserName(),
+                requestDto.getEmail(),
+                passwordEncoder.encode(requestDto.getPassword())
+        );
 
+        // 7) 응답 생성
         return UserResponseDto.builder()
                 .userId(user.getUserId())
                 .userLoginId(user.getUserLoginId())
@@ -147,11 +166,24 @@ public class UserService {
     }
 
     // 사용자 삭제
-    public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId)
+    public void deleteUser(Long targetUserId) {
+        Long currentOrgId = SecurityUtil.getOrgId();
+
+        // 1) 권한 검사 (ROOT 포함 처리됨)
+        permissionService.checkPermission("USER_DELETE");
+
+        // 2) 대상 사용자 조회
+        User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        userRepository.delete(user);
+        // 3) 조직 일치 여부 확인 (ROOT는 우회)
+        if (!SecurityUtil.hasRole("ROOT") &&
+                !Objects.equals(targetUser.getOrganization().getOrgId(), currentOrgId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        // 4) 삭제 처리
+        userRepository.delete(targetUser);
     }
 
     // 사용자 전체 조회

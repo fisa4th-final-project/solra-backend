@@ -5,6 +5,7 @@ import com.fisa.solra.domain.node.service.NodeService;
 import com.fisa.solra.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ public class NodeController {
 
     // ✅ 클러스터 내 모든 노드 정보 조회
     @GetMapping
+    @PreAuthorize("@permissionService.checkPermission('NODE_READ')")
     public ResponseEntity<ApiResponse<List<NodeInfoResponseDto>>> getNodeList(
             @PathVariable Long clusterId) {
         List<NodeInfoResponseDto> dtos = nodeService.getAllNodes(clusterId);
@@ -31,6 +33,7 @@ public class NodeController {
 
     // ✅ 특정 노드 상세 조회
     @GetMapping("/{nodeName}")
+    @PreAuthorize("@permissionService.checkPermission('NODE_READ')")
     public ResponseEntity<ApiResponse<NodeInfoResponseDto>> getNodeDetail(
             @PathVariable Long clusterId,
             @PathVariable String nodeName) {

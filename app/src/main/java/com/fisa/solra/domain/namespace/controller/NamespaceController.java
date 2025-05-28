@@ -6,6 +6,7 @@ import com.fisa.solra.domain.namespace.service.NamespaceService;
 import com.fisa.solra.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class NamespaceController {
 
     // ✅ 네임스페이스 전체 조회
     @GetMapping
+    @PreAuthorize("@permissionService.checkPermission('NAMESPACE_READ')")
     public ResponseEntity<ApiResponse<List<NamespaceResponseDto>>> list(
             @PathVariable Long clusterId) {
         return ResponseEntity.ok(
@@ -31,6 +33,7 @@ public class NamespaceController {
 
     // ✅ 단일 네임스페이스 상세 조회
     @GetMapping("/{name}")
+    @PreAuthorize("@permissionService.checkPermission('NAMESPACE_READ')")
     public ResponseEntity<ApiResponse<NamespaceResponseDto>> get(
             @PathVariable Long clusterId,
             @PathVariable String name) {
@@ -44,6 +47,7 @@ public class NamespaceController {
 
     // ✅ 네임스페이스 생성
     @PostMapping
+    @PreAuthorize("@permissionService.checkPermission('NAMESPACE_CREATE')")
     public ResponseEntity<ApiResponse<NamespaceResponseDto>> create(
             @PathVariable Long clusterId,
             @RequestBody NamespaceRequestDto dto) {
@@ -57,6 +61,7 @@ public class NamespaceController {
 
     // ✅ 네임스페이스 수정
     @PatchMapping("/{name}")
+    @PreAuthorize("@permissionService.checkPermission('NAMESPACE_UPDATE')")
     public ResponseEntity<ApiResponse<NamespaceResponseDto>> update(
             @PathVariable Long clusterId,
             @PathVariable String name,
@@ -71,6 +76,7 @@ public class NamespaceController {
 
     // ✅ 네임스페이스 삭제
     @DeleteMapping("/{name}")
+    @PreAuthorize("@permissionService.checkPermission('NAMESPACE_DELETE')")
     public ResponseEntity<ApiResponse<String>> delete(
             @PathVariable Long clusterId,
             @PathVariable String name) {
