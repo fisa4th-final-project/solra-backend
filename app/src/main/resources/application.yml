@@ -20,7 +20,7 @@ spring:
         timeout: 1800s
     data:
         redis:
-            host: ${SPRING_REDIS_URL}
+            host: 34.64.216.178
             port: 6379
 
 jwt:
