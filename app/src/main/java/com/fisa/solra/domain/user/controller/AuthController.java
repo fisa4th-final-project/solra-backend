@@ -66,10 +66,15 @@ public class AuthController {
 
     @GetMapping("/me")
     public ApiResponse<UserResponseDto> getMyInfo(HttpSession session){
+        String sessionId = session.getId();
         String token = (String) session.getAttribute("jwtToken");
         if(token == null){
             throw new BusinessException(ErrorCode.UNAUTHENTICATED);
         }
+
+        // 로그 확인용
+        System.out.println("[SESSION DEBUG] ID: " + sessionId);
+        System.out.println("[SESSION DEBUG] JWT: " + token);
 
         Long userId = jwtTokenProvider.getUserId(token);
 
