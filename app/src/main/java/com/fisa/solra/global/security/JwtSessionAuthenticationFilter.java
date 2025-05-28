@@ -34,8 +34,14 @@ public class JwtSessionAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession(false);
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/auth/login")) {
+            // 로그인은 무시하고 다음 필터로 넘김
+            filterChain.doFilter(request, response);
+            return;
+        }
 
+        HttpSession session = request.getSession(false);
         if (session != null) {
             String token = (String) session.getAttribute("jwtToken");
 
