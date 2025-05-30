@@ -394,9 +394,47 @@ class ClusterServiceTest {
         assertEquals("DUPLICATED_CLUSTER_NAME", ex.getErrorCode().name());
     }
 
-    // ⚠️ TC_04_05: 변경된 필드 없음 → 예외 (CLUSTER_UPDATE_NO_CHANGE)
+    // ✅ TC_04_05: API 서버 URL 중복 → 예외 (CLUSTER_APISERVER_DUPLICATE)
     @Test
-    @DisplayName("TC_04_05: 변경된 필드 없음 → 예외 (CLUSTER_UPDATE_NO_CHANGE)")
+    @DisplayName("TC_04_05: API 서버 URL 중복 → 예외 (CLUSTER_APISERVER_DUPLICATE)")
+    void updateCluster_duplicateApiServer_throwsException() {
+        Long clusterId = 1L;
+        Long orgId = 1L;
+
+        Organization org = Organization.builder().orgId(orgId).orgName("Org").build();
+        Cluster existing = Cluster.builder()
+                .name("cluster")
+                .apiServerUrl("https://old-api")
+                .env("dev")
+                .caCert("ca")
+                .saToken("token")
+                .organization(org)
+                .build();
+
+        ClusterRequestDto dto = ClusterRequestDto.builder()
+                .name("cluster")
+                .apiServerUrl("https://dup-api")
+                .env("dev")
+                .caCert("ca")
+                .saToken("token")
+                .orgId(orgId)
+                .build();
+
+        when(clusterRepository.findById(clusterId)).thenReturn(Optional.of(existing));
+        securityUtilMock.when(() -> SecurityUtil.hasRole("ROOT")).thenReturn(false);
+        securityUtilMock.when(SecurityUtil::getOrgId).thenReturn(orgId);
+        when(clusterRepository.existsByApiServerUrl("https://dup-api")).thenReturn(true);
+
+        BusinessException ex = assertThrows(BusinessException.class, () ->
+                clusterService.updateCluster(clusterId, dto));
+
+        System.out.println("⚠️ TC_04_05 - 발생한 예외 코드: " + ex.getErrorCode());
+        assertEquals("CLUSTER_APISERVER_DUPLICATE", ex.getErrorCode().name());
+    }
+
+    // ✅ TC_04_06: 변경된 필드 없음 → 예외 (CLUSTER_UPDATE_NO_CHANGE)
+    @Test
+    @DisplayName("TC_04_06: 변경된 필드 없음 → 예외 (CLUSTER_UPDATE_NO_CHANGE)")
     void updateCluster_noChange_throwsException() {
         Long clusterId = 1L;
         Long orgId = 1L;
@@ -427,7 +465,7 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 clusterService.updateCluster(clusterId, dto));
 
-        System.out.println("⚠️ TC_04_05 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_04_06 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("CLUSTER_UPDATE_NO_CHANGE", ex.getErrorCode().name());
     }
 
