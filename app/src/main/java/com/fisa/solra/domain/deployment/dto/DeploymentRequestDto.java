@@ -1,14 +1,14 @@
 package com.fisa.solra.domain.deployment.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Map;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class DeploymentRequestDto {
     /** Deployment 리소스 이름 (optional) */
     private String name;
@@ -25,6 +25,7 @@ public class DeploymentRequestDto {
     @Getter
     @Setter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class ContainerDto {
         /** 컨테이너 이름 (optional) */
         private String name;

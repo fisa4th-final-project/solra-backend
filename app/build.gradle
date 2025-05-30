@@ -56,11 +56,21 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.session:spring-session-data-redis'
 
+	//JUnit5, Mockito, AssertJ, Spring Test 포함
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
+	testImplementation 'org.mockito:mockito-inline:5.2.0'
+
+	// Fabric8 Kubernetes 모델 (apps, core 등)
+	implementation 'io.fabric8:kubernetes-model-core:6.0.0'
+	implementation 'io.fabric8:kubernetes-model-apps:6.0.0'
+
 	//logback
 	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 
 	//aop
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
+
 }
 
 tasks.named('test') {
