@@ -1,9 +1,12 @@
 package com.fisa.solra.global.exception;
 
 import com.fisa.solra.global.response.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.HttpStatus;
@@ -13,8 +16,24 @@ import org.springframework.http.HttpStatus;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e, HttpServletRequest request) {
         ErrorCode error = e.getErrorCode();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userId = (auth != null && auth.getName() != null) ? auth.getName() : "anonymous";
+        String roles = (auth != null) ? auth.getAuthorities().toString() : "N/A";
+        String uri = request.getRequestURI();
+        String method = request.getMethod();
+        String clientIp = request.getHeader("X-Forwarded-For");
+        if (clientIp == null) {
+            clientIp = request.getRemoteAddr();
+            if ("0:0:0:0:0:0:0:1".equals(clientIp) || "::1".equals(clientIp)) {
+                clientIp = "127.0.0.1";
+            }
+        }
+
+        log.warn("❌ 권한 실패 | ID: {} | ROLE: {} | IP: {} | URI: {} | 메서드: {} | 에러: {}",
+                userId, roles, clientIp, uri, method, e.getMessage());
+
         return ResponseEntity
                 .status(error.getStatus())
                 .body(ApiResponse.fail(error.getStatus().value(), error.getMessage(), error.getCode()));
