@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 비즈니스 예외 중복 로깅 방지 -->
+    <logger name="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver" level="ERROR" />
+
+    <!-- 1. 로그 패턴: JSON 출력 (logstash 형식) -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
+    <!-- 2. 로그 레벨 별 설정 (INFO 이상) -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <!-- 3. 특정 패키지 로깅 (선택적으로 DEBUG 설정 가능) -->
+    <logger name="com.fisa.solra" level="DEBUG"/>
+
+</configuration>

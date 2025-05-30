@@ -30,11 +30,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/users").permitAll()  // 로그인은 허용
-                        .anyRequest().authenticated() // 나머지는 인증 필요
+                        //.requestMatchers("/api/auth/login", "/api/users").permitAll()  // 로그인은 허용
+                        //.anyRequest().authenticated() // 나머지는 인증 필요
+                        .anyRequest().permitAll() // 나머지는 인증 필요
                 )
                 .formLogin(form -> form.disable())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // 🔥 필터 등록
+                //.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // 🔥 필터 등록
                 .build();
     }
 

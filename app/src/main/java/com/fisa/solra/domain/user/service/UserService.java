@@ -102,17 +102,15 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // 조직과 부서가 null일 수 있으므로 안전하게 추출
-        Long orgId = user.getOrganization() != null ? user.getOrganization().getOrgId() : null;
-        Long deptId = user.getDepartment() != null ? user.getDepartment().getDeptId() : null;
-
         return UserResponseDto.builder()
                 .userId(user.getUserId())
                 .userLoginId(user.getUserLoginId())
                 .userName(user.getUserName())
                 .email(user.getEmail())
-                .organizationId(orgId)
-                .departmentId(deptId)
+                .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
+                .organizationName(user.getOrganization() != null ? user.getOrganization().getOrgName() : null)
+                .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
+                .departmentName(user.getOrganization() != null ? user.getDepartment().getDeptName() : null)
                 .build();
     }
 
