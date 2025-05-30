@@ -1,8 +1,6 @@
 package com.fisa.solra.domain.service.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 import java.util.Map;
@@ -10,6 +8,8 @@ import java.util.Map;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ServiceRequestDto {
     private String name;
     private String type;
@@ -19,6 +19,8 @@ public class ServiceRequestDto {
     @Getter
     @Setter
     @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class Port {
         /** ServicePort name (required if multiple ports) */
         private String name;
