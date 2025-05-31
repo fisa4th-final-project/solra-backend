@@ -1,11 +1,13 @@
 package com.fisa.solra.domain.user.dto;
 
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class UserCreateRequestDto {
 
     @NotBlank(message = "로그인 ID는 필수입니다.")
