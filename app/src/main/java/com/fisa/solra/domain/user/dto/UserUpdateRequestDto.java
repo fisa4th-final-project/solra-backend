@@ -2,11 +2,13 @@ package com.fisa.solra.domain.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class UserUpdateRequestDto {
     private String userName;
     private String email;
