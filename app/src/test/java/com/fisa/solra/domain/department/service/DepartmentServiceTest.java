@@ -50,9 +50,9 @@ class DepartmentServiceTest {
         securityUtilMock.close();
     }
 
-    // TC_DP_01_01: 전체 부서 조회 성공
+    // TC_DEPT_01_01: 전체 부서 조회 성공
     @Test
-    @DisplayName("TC_DP_01_01: 전체 부서 조회 → 성공")
+    @DisplayName("TC_DEPT_01_01: 전체 부서 조회 → 성공")
     void getAllDepartments_success() {
         // given
         // .hasRole("ROOT") → true
@@ -70,7 +70,7 @@ class DepartmentServiceTest {
         List<DepartmentResponseDto> result = departmentService.getAllDepartments(null);
 
         // then
-        System.out.println("✅ TC_DP_01_01 - 조회된 부서 수: " + result.size());
+        System.out.println("✅ TC_DEPT_01_01 - 조회된 부서 수: " + result.size());
         assertEquals(2, result.size());
         assertEquals(
                 Set.of("DeptA", "DeptB"),
@@ -78,9 +78,9 @@ class DepartmentServiceTest {
         );
     }
 
-    // TC_DP_01_02: 전체 부서 조회 결과 없음 → 예외
+    // TC_DEPT_01_02: 전체 부서 조회 결과 없음 → 예외
     @Test
-    @DisplayName("TC_DP_01_02: 전체 부서 조회 → 예외 (DEPARTMENT_NOT_FOUND)")
+    @DisplayName("TC_DEPT_01_02: 전체 부서 조회 → 예외 (DEPARTMENT_NOT_FOUND)")
     void getAllDepartments_notFound() {
         // given
         securityUtilMock.when(() -> SecurityUtil.hasRole("ROOT")).thenReturn(true);
@@ -92,13 +92,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.getAllDepartments(null)
         );
-        System.out.println("⚠️ TC_DP_01_02 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_01_02 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.DEPARTMENT_NOT_FOUND, ex.getErrorCode());
     }
 
-    // TC_DP_02_01: 단일 부서 조회 성공 (ROOT 권한)
+    // TC_DEPT_02_01: 단일 부서 조회 성공 (ROOT 권한)
     @Test
-    @DisplayName("TC_DP_02_01: 단일 부서 조회 → 성공 (ROOT 권한)")
+    @DisplayName("TC_DEPT_02_01: 단일 부서 조회 → 성공 (ROOT 권한)")
     void getDepartmentById_success_root() {
         // given
         Long deptId = 100L;
@@ -113,14 +113,14 @@ class DepartmentServiceTest {
         DepartmentResponseDto result = departmentService.getDepartmentById(deptId);
 
         // then
-        System.out.println("✅ TC_DP_02_01 - 조회된 부서: " + result.getDeptName());
+        System.out.println("✅ TC_DEPT_02_01 - 조회된 부서: " + result.getDeptName());
         assertEquals("DeptX", result.getDeptName());
         assertEquals(org.getOrgId(), result.getOrgId());
     }
 
-    // TC_DP_02_02: 단일 부서 조회 성공 (조직 일치)
+    // TC_DEPT_02_02: 단일 부서 조회 성공 (조직 일치)
     @Test
-    @DisplayName("TC_DP_02_02: 단일 부서 조회 → 성공 (조직 일치)")
+    @DisplayName("TC_DEPT_02_02: 단일 부서 조회 → 성공 (조직 일치)")
     void getDepartmentById_success_sameOrg() {
         // given
         Long deptId = 101L;
@@ -136,14 +136,14 @@ class DepartmentServiceTest {
         DepartmentResponseDto result = departmentService.getDepartmentById(deptId);
 
         // then
-        System.out.println("✅ TC_DP_02_02 - 조회된 부서: " + result.getDeptName());
+        System.out.println("✅ TC_DEPT_02_02 - 조회된 부서: " + result.getDeptName());
         assertEquals("DeptY", result.getDeptName());
         assertEquals(org.getOrgId(), result.getOrgId());
     }
 
-    // TC_DP_02_03: 단일 부서 조회 실패 - 부서 없음
+    // TC_DEPT_02_03: 단일 부서 조회 실패 - 부서 없음
     @Test
-    @DisplayName("TC_DP_02_03: 단일 부서 조회 → 예외 (DEPARTMENT_NOT_FOUND)")
+    @DisplayName("TC_DEPT_02_03: 단일 부서 조회 → 예외 (DEPARTMENT_NOT_FOUND)")
     void getDepartmentById_notFound() {
         // given
         Long deptId = 999L;
@@ -155,13 +155,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.getDepartmentById(deptId)
         );
-        System.out.println("⚠️ TC_DP_02_03 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_02_03 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.DEPARTMENT_NOT_FOUND, ex.getErrorCode());
     }
 
-    // TC_DP_02_04: 단일 부서 조회 실패 - 조직 불일치
+    // TC_DEPT_02_04: 단일 부서 조회 실패 - 조직 불일치
     @Test
-    @DisplayName("TC_DP_02_04: 단일 부서 조회 → 예외 (ACCESS_DENIED)")
+    @DisplayName("TC_DEPT_02_04: 단일 부서 조회 → 예외 (ACCESS_DENIED)")
     void getDepartmentById_accessDenied() {
         // given
         Long deptId = 102L;
@@ -178,13 +178,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.getDepartmentById(deptId)
         );
-        System.out.println("⚠️ TC_DP_02_04 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_02_04 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.ACCESS_DENIED, ex.getErrorCode());
     }
 
-    // TC_DP_03_01: 부서 생성 성공 (ROOT 권한)
+    // TC_DEPT_03_01: 부서 생성 성공 (ROOT 권한)
     @Test
-    @DisplayName("TC_DP_03_01: 부서 생성 → 성공 (ROOT 권한)")
+    @DisplayName("TC_DEPT_03_01: 부서 생성 → 성공 (ROOT 권한)")
     void createDepartment_success_root() {
         // given
         Long orgId = 50L;
@@ -214,14 +214,14 @@ class DepartmentServiceTest {
         DepartmentResponseDto result = departmentService.createDepartment(dto);
 
         // then
-        System.out.println("✅ TC_DP_03_01 - 생성된 부서 ID: " + result.getDeptId());
+        System.out.println("✅ TC_DEPT_03_01 - 생성된 부서 ID: " + result.getDeptId());
         assertEquals("NewDept", result.getDeptName());
         assertEquals(orgId, result.getOrgId());
     }
 
-    // TC_DP_03_02: 부서 생성 실패 - 조직 ID 없음
+    // TC_DEPT_03_02: 부서 생성 실패 - 조직 ID 없음
     @Test
-    @DisplayName("TC_DP_03_02: 부서 생성 → 예외 (ORGANIZATION_NOT_FOUND)")
+    @DisplayName("TC_DEPT_03_02: 부서 생성 → 예외 (ORGANIZATION_NOT_FOUND)")
     void createDepartment_orgNotFound() {
         // given
         DepartmentRequestDto dto = DepartmentRequestDto.builder()
@@ -237,13 +237,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.createDepartment(dto)
         );
-        System.out.println("⚠️ TC_DP_03_02 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_03_02 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.ORGANIZATION_NOT_FOUND, ex.getErrorCode());
     }
 
-    // TC_DP_03_03: 부서 생성 실패 - 조직 불일치
+    // TC_DEPT_03_03: 부서 생성 실패 - 조직 불일치
     @Test
-    @DisplayName("TC_DP_03_03: 부서 생성 → 예외 (ACCESS_DENIED)")
+    @DisplayName("TC_DEPT_03_03: 부서 생성 → 예외 (ACCESS_DENIED)")
     void createDepartment_accessDenied() {
         // given
         Long orgId = 60L;
@@ -262,13 +262,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.createDepartment(dto)
         );
-        System.out.println("⚠️ TC_DP_03_03 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_03_03 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.ACCESS_DENIED, ex.getErrorCode());
     }
 
-    // TC_DP_03_04: 부서 생성 실패 - 이름 유효성 실패
+    // TC_DEPT_03_04: 부서 생성 실패 - 이름 유효성 실패
     @Test
-    @DisplayName("TC_DP_03_04: 부서 생성 → 예외 (INVALID_INPUT)")
+    @DisplayName("TC_DEPT_03_04: 부서 생성 → 예외 (INVALID_INPUT)")
     void createDepartment_invalidInput() {
         // given
         Long orgId = 70L;
@@ -286,13 +286,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.createDepartment(dto)
         );
-        System.out.println("⚠️ TC_DP_03_04 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_03_04 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.INVALID_INPUT, ex.getErrorCode());
     }
 
-    // TC_DP_03_05: 부서 생성 실패 - 중복 이름
+    // TC_DEPT_03_05: 부서 생성 실패 - 중복 이름
     @Test
-    @DisplayName("TC_DP_03_05: 부서 생성 → 예외 (DUPLICATED_DEPARTMENT_NAME)")
+    @DisplayName("TC_DEPT_03_05: 부서 생성 → 예외 (DUPLICATED_DEPARTMENT_NAME)")
     void createDepartment_duplicateName() {
         // given
         Long orgId = 80L;
@@ -312,13 +312,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.createDepartment(dto)
         );
-        System.out.println("⚠️ TC_DP_03_05 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_03_05 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.DUPLICATED_DEPARTMENT_NAME, ex.getErrorCode());
     }
 
-    // TC_DP_03_06: 부서 생성 실패 - DataIntegrityViolationException
+    // TC_DEPT_03_06: 부서 생성 실패 - DataIntegrityViolationException
     @Test
-    @DisplayName("TC_DP_03_06: 부서 생성 → 예외 (DEPARTMENT_CREATE_FAILED)")
+    @DisplayName("TC_DEPT_03_06: 부서 생성 → 예외 (DEPARTMENT_CREATE_FAILED)")
     void createDepartment_dataIntegrityViolation() {
         // given
         Long orgId = 90L;
@@ -342,13 +342,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.createDepartment(dto)
         );
-        System.out.println("⚠️ TC_DP_03_06 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_03_06 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.DEPARTMENT_CREATE_FAILED, ex.getErrorCode());
     }
 
-    // TC_DP_04_01: 부서명 수정 성공 (ROOT 권한)
+    // TC_DEPT_04_01: 부서명 수정 성공 (ROOT 권한)
     @Test
-    @DisplayName("TC_DP_04_01: 부서명 수정 → 성공 (ROOT 권한)")
+    @DisplayName("TC_DEPT_04_01: 부서명 수정 → 성공 (ROOT 권한)")
     void updateDepartmentName_success_root() {
         // given
         Long deptId = 300L;
@@ -369,14 +369,14 @@ class DepartmentServiceTest {
         DepartmentResponseDto result = departmentService.updateDepartmentName(deptId, dto);
 
         // then
-        System.out.println("✅ TC_DP_04_01 - 수정된 부서명: " + result.getDeptName());
+        System.out.println("✅ TC_DEPT_04_01 - 수정된 부서명: " + result.getDeptName());
         assertEquals("NewName", result.getDeptName());
         assertEquals(org.getOrgId(), result.getOrgId());
     }
 
-    // TC_DP_04_02: 부서명 수정 실패 - 부서 없음
+    // TC_DEPT_04_02: 부서명 수정 실패 - 부서 없음
     @Test
-    @DisplayName("TC_DP_04_02: 부서명 수정 → 예외 (DEPARTMENT_NOT_FOUND)")
+    @DisplayName("TC_DEPT_04_02: 부서명 수정 → 예외 (DEPARTMENT_NOT_FOUND)")
     void updateDepartmentName_notFound() {
         // given
         Long deptId = 301L;
@@ -390,13 +390,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.updateDepartmentName(deptId, dto)
         );
-        System.out.println("⚠️ TC_DP_04_02 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_04_02 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.DEPARTMENT_NOT_FOUND, ex.getErrorCode());
     }
 
-    // TC_DP_04_03: 부서명 수정 실패 - 권한 없음
+    // TC_DEPT_04_03: 부서명 수정 실패 - 권한 없음
     @Test
-    @DisplayName("TC_DP_04_03: 부서명 수정 → 예외 (ACCESS_DENIED)")
+    @DisplayName("TC_DEPT_04_03: 부서명 수정 → 예외 (ACCESS_DENIED)")
     void updateDepartmentName_accessDenied() {
         // given
         Long deptId = 302L;
@@ -415,13 +415,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.updateDepartmentName(deptId, dto)
         );
-        System.out.println("⚠️ TC_DP_04_03 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_04_03 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.ACCESS_DENIED, ex.getErrorCode());
     }
 
-    // TC_DP_04_04: 부서명 수정 실패 - 입력값 유효성 실패
+    // TC_DEPT_04_04: 부서명 수정 실패 - 입력값 유효성 실패
     @Test
-    @DisplayName("TC_DP_04_04: 부서명 수정 → 예외 (INVALID_INPUT)")
+    @DisplayName("TC_DEPT_04_04: 부서명 수정 → 예외 (INVALID_INPUT)")
     void updateDepartmentName_invalidInput() {
         // given
         Long deptId = 303L;
@@ -439,12 +439,12 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.updateDepartmentName(deptId, dto)
         );
-        System.out.println("⚠️ TC_DP_04_04 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_04_04 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.INVALID_INPUT, ex.getErrorCode());
     }
 
     @Test
-    @DisplayName("TC_DP_04_05: 부서명 수정 → 예외 (DUPLICATED_DEPARTMENT_NAME)")
+    @DisplayName("TC_DEPT_04_05: 부서명 수정 → 예외 (DUPLICATED_DEPARTMENT_NAME)")
     void updateDepartmentName_duplicateName() {
         // given
         Long deptId = 304L;
@@ -470,13 +470,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.updateDepartmentName(deptId, dto)
         );
-        System.out.println("⚠️ TC_DP_04_05 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_04_05 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.DUPLICATED_DEPARTMENT_NAME, ex.getErrorCode());
     }
 
-    // TC_DP_05_01: 부서 삭제 성공 (ROOT 권한)
+    // TC_DEPT_05_01: 부서 삭제 성공 (ROOT 권한)
     @Test
-    @DisplayName("TC_DP_05_01: 부서 삭제 → 성공 (ROOT 권한)")
+    @DisplayName("TC_DEPT_05_01: 부서 삭제 → 성공 (ROOT 권한)")
     void deleteDepartment_success_root() {
         // given
         Long deptId = 400L;
@@ -491,13 +491,13 @@ class DepartmentServiceTest {
         departmentService.deleteDepartment(deptId);
 
         // then
-        System.out.println("✅ TC_DP_05_01 - 부서 삭제 호출됨");
+        System.out.println("✅ TC_DEPT_05_01 - 부서 삭제 호출됨");
         verify(departmentRepository, times(1)).deleteById(deptId);
     }
 
-    // TC_DP_05_02: 부서 삭제 실패 - 부서 없음
+    // TC_DEPT_05_02: 부서 삭제 실패 - 부서 없음
     @Test
-    @DisplayName("TC_DP_05_02: 부서 삭제 → 예외 (DEPARTMENT_NOT_FOUND)")
+    @DisplayName("TC_DEPT_05_02: 부서 삭제 → 예외 (DEPARTMENT_NOT_FOUND)")
     void deleteDepartment_notFound() {
         // given
         Long deptId = 401L;
@@ -509,13 +509,13 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.deleteDepartment(deptId)
         );
-        System.out.println("⚠️ TC_DP_05_02 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_05_02 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.DEPARTMENT_NOT_FOUND, ex.getErrorCode());
     }
 
-    // TC_DP_05_03: 부서 삭제 실패 - 권한 없음
+    // TC_DEPT_05_03: 부서 삭제 실패 - 권한 없음
     @Test
-    @DisplayName("TC_DP_05_03: 부서 삭제 → 예외 (ACCESS_DENIED)")
+    @DisplayName("TC_DEPT_05_03: 부서 삭제 → 예외 (ACCESS_DENIED)")
     void deleteDepartment_accessDenied() {
         // given
         Long deptId = 402L;
@@ -532,7 +532,7 @@ class DepartmentServiceTest {
                 BusinessException.class,
                 () -> departmentService.deleteDepartment(deptId)
         );
-        System.out.println("⚠️ TC_DP_05_03 - 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_DEPT_05_03 - 예외 코드: " + ex.getErrorCode());
         assertEquals(ErrorCode.ACCESS_DENIED, ex.getErrorCode());
     }
 

@@ -47,9 +47,9 @@ class ClusterServiceTest {
         securityUtilMock.close();
     }
 
-    // TC_01_01
+    // TC_CL_01_01
     @Test
-    @DisplayName("TC_01_01: ROOT 사용자가 모든 클러스터 조회 시도 → 성공")
+    @DisplayName("TC_CL_01_01: ROOT 사용자가 모든 클러스터 조회 시도 → 성공")
     void getClusters_asRootUser_success() {
         securityUtilMock.when(() -> SecurityUtil.hasRole("ROOT")).thenReturn(true);
         securityUtilMock.when(SecurityUtil::getOrgId).thenReturn(1L);
@@ -62,15 +62,15 @@ class ClusterServiceTest {
 
         var result = clusterService.getClusters(null);
 
-        System.out.println("✅TC_01_01 - 조회된 클러스터 수: " + result.size());
+        System.out.println("✅TC_CL_01_01 - 조회된 클러스터 수: " + result.size());
         result.forEach(c -> System.out.println(" - " + c.getName()));
 
         assertEquals(2, result.size());
     }
 
-    // TC_01_02
+    // TC_CL_01_02
     @Test
-    @DisplayName("TC_01_02: 일반 사용자가 자신의 조직 클러스터 조회 → 성공")
+    @DisplayName("TC_CL_01_02: 일반 사용자가 자신의 조직 클러스터 조회 → 성공")
     void getClusters_asOrgUser_ownOrg_success() {
         securityUtilMock.when(() -> SecurityUtil.hasRole("ROOT")).thenReturn(false);
         securityUtilMock.when(SecurityUtil::getOrgId).thenReturn(1L);
@@ -80,13 +80,13 @@ class ClusterServiceTest {
 
         var result = clusterService.getClusters(1L);
 
-        System.out.println("✅TC_01_02 -  조직 1의 클러스터 수: " + result.size());
+        System.out.println("✅TC_CL_01_02 -  조직 1의 클러스터 수: " + result.size());
         assertEquals(1, result.size());
     }
 
-    // TC_01_03
+    // TC_CL_01_03
     @Test
-    @DisplayName("TC_01_03: 일반 사용자가 다른 조직 클러스터 조회 시도 → ACCESS_DENIED 예외")
+    @DisplayName("TC_CL_01_03: 일반 사용자가 다른 조직 클러스터 조회 시도 → ACCESS_DENIED 예외")
     void getClusters_asOrgUser_otherOrg_throwsAccessDenied() {
         securityUtilMock.when(() -> SecurityUtil.hasRole("ROOT")).thenReturn(false);
         securityUtilMock.when(SecurityUtil::getOrgId).thenReturn(1L);
@@ -95,13 +95,13 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> clusterService.getClusters(요청한_다른_조직_ID));
 
-        System.out.println("⚠️TC_01_03 -  발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️TC_CL_01_03 -  발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("ACCESS_DENIED", ex.getErrorCode().name());
     }
 
-    // TC_02_01
+    // TC_CL_02_01
     @Test
-    @DisplayName("TC_02_01: 클러스터가 존재하고 권한이 맞으면 → 성공")
+    @DisplayName("TC_CL_02_01: 클러스터가 존재하고 권한이 맞으면 → 성공")
     void getCluster_existsAndHasPermission_success() {
         Long clusterId = 1L;
         Long orgId = 100L;
@@ -122,13 +122,13 @@ class ClusterServiceTest {
 
         var result = clusterService.getCluster(clusterId);
 
-        System.out.println("✅TC_02_01 - 조회된 클러스터 이름: " + result.getName());
+        System.out.println("✅TC_CL_02_01 - 조회된 클러스터 이름: " + result.getName());
         assertEquals("clusterA", result.getName());
     }
 
-    // TC_02_02
+    // TC_CL_02_02
     @Test
-    @DisplayName("TC_02_02: 클러스터가 없으면 → 예외 발생 (CLUSTER_NOT_FOUND)")
+    @DisplayName("TC_CL_02_02: 클러스터가 없으면 → 예외 발생 (CLUSTER_NOT_FOUND)")
     void getCluster_notExist_throwsClusterNotFound() {
         Long clusterId = 999L;
         when(clusterRepository.findById(clusterId)).thenReturn(Optional.empty());
@@ -136,13 +136,13 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> clusterService.getCluster(clusterId));
 
-        System.out.println("⚠️TC_02_02 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️TC_CL_02_02 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("CLUSTER_NOT_FOUND", ex.getErrorCode().name());
     }
 
-    // TC_02_03
+    // TC_CL_02_03
     @Test
-    @DisplayName("TC_02_03: 권한이 없는 조직의 클러스터 → 예외 발생 (ACCESS_DENIED)")
+    @DisplayName("TC_CL_02_03: 권한이 없는 조직의 클러스터 → 예외 발생 (ACCESS_DENIED)")
     void getCluster_differentOrgUser_throwsAccessDenied() {
         Long clusterId = 2L;
 
@@ -163,7 +163,7 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> clusterService.getCluster(clusterId));
 
-        System.out.println("⚠️TC_02_03 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️TC_CL_02_03 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("ACCESS_DENIED", ex.getErrorCode().name());
     }
 
@@ -184,9 +184,9 @@ class ClusterServiceTest {
                 .build();
     }
 
-    // ✅ TC_03_01: 정상 등록 시 → 성공
+    // ✅ TC_CL_03_01: 정상 등록 시 → 성공
     @Test
-    @DisplayName("TC_03_01: 정상 등록 시 → 성공")
+    @DisplayName("TC_CL_03_01: 정상 등록 시 → 성공")
     void createCluster_success() {
         // given
         ClusterRequestDto dto = ClusterRequestDto.builder()
@@ -214,13 +214,13 @@ class ClusterServiceTest {
         var result = clusterService.createCluster(dto);
 
         // then
-        System.out.println("✅ TC_03_01 - 생성된 클러스터 이름: " + result.getName());
+        System.out.println("✅ TC_CL_03_01 - 생성된 클러스터 이름: " + result.getName());
         assertEquals("new-cluster", result.getName());
     }
 
-    // ⚠️ TC_03_02: 클러스터 이름 중복 → 예외 발생 (DUPLICATED_CLUSTER_NAME)
+    // ⚠️ TC_CL_03_02: 클러스터 이름 중복 → 예외 발생 (DUPLICATED_CLUSTER_NAME)
     @Test
-    @DisplayName("TC_03_02: 클러스터 이름 중복 → 예외 발생 (DUPLICATED_CLUSTER_NAME)")
+    @DisplayName("TC_CL_03_02: 클러스터 이름 중복 → 예외 발생 (DUPLICATED_CLUSTER_NAME)")
     void createCluster_nameDuplicate_throwsException() {
         // given
         ClusterRequestDto dto = ClusterRequestDto.builder()
@@ -236,13 +236,13 @@ class ClusterServiceTest {
 
         // when & then
         BusinessException ex = assertThrows(BusinessException.class, () -> clusterService.createCluster(dto));
-        System.out.println("⚠️ TC_03_02 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_CL_03_02 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("DUPLICATED_CLUSTER_NAME", ex.getErrorCode().name());
     }
 
-    // ⚠️ TC_03_03: API 서버 URL 중복 → 예외 발생 (CLUSTER_APISERVER_DUPLICATE)
+    // ⚠️ TC_CL_03_03: API 서버 URL 중복 → 예외 발생 (CLUSTER_APISERVER_DUPLICATE)
     @Test
-    @DisplayName("TC_03_03: API 서버 URL 중복 → 예외 발생 (CLUSTER_APISERVER_DUPLICATE)")
+    @DisplayName("TC_CL_03_03: API 서버 URL 중복 → 예외 발생 (CLUSTER_APISERVER_DUPLICATE)")
     void createCluster_apiUrlDuplicate_throwsException() {
         // given
         ClusterRequestDto dto = ClusterRequestDto.builder()
@@ -259,13 +259,13 @@ class ClusterServiceTest {
 
         // when & then
         BusinessException ex = assertThrows(BusinessException.class, () -> clusterService.createCluster(dto));
-        System.out.println("⚠️ TC_03_03 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_CL_03_03 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("CLUSTER_APISERVER_DUPLICATE", ex.getErrorCode().name());
     }
 
-    // ⚠️ TC_03_04: 존재하지 않는 조직 ID → 예외 발생 (ORGANIZATION_NOT_FOUND)
+    // ⚠️ TC_CL_03_04: 존재하지 않는 조직 ID → 예외 발생 (ORGANIZATION_NOT_FOUND)
     @Test
-    @DisplayName("TC_03_04: 존재하지 않는 조직 ID → 예외 발생 (ORGANIZATION_NOT_FOUND)")
+    @DisplayName("TC_CL_03_04: 존재하지 않는 조직 ID → 예외 발생 (ORGANIZATION_NOT_FOUND)")
     void createCluster_orgNotFound_throwsException() {
         // given
         ClusterRequestDto dto = ClusterRequestDto.builder()
@@ -283,13 +283,13 @@ class ClusterServiceTest {
 
         // when & then
         BusinessException ex = assertThrows(BusinessException.class, () -> clusterService.createCluster(dto));
-        System.out.println("⚠️ TC_03_04 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_CL_03_04 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("ORGANIZATION_NOT_FOUND", ex.getErrorCode().name());
     }
 
-    // ✅ TC_04_01: 변경이 있고 권한이 맞을 때 → 성공
+    // ✅ TC_CL_04_01: 변경이 있고 권한이 맞을 때 → 성공
     @Test
-    @DisplayName("TC_04_01: 변경이 있고 권한이 맞을 때 → 성공")
+    @DisplayName("TC_CL_04_01: 변경이 있고 권한이 맞을 때 → 성공")
     void updateCluster_success_withChange() {
         // given
         Long clusterId = 1L;
@@ -325,13 +325,13 @@ class ClusterServiceTest {
         var result = clusterService.updateCluster(clusterId, dto);
 
         // then
-        System.out.println("✅ TC_04_01 - 업데이트된 클러스터 이름: " + result.getName());
+        System.out.println("✅ TC_CL_04_01 - 업데이트된 클러스터 이름: " + result.getName());
         assertEquals("new-name", result.getName());
     }
 
-    // ⚠️ TC_04_02: 클러스터 존재하지 않음 → 예외 (CLUSTER_NOT_FOUND)
+    // ⚠️ TC_CL_04_02: 클러스터 존재하지 않음 → 예외 (CLUSTER_NOT_FOUND)
     @Test
-    @DisplayName("TC_04_02: 클러스터 존재하지 않음 → 예외 (CLUSTER_NOT_FOUND)")
+    @DisplayName("TC_CL_04_02: 클러스터 존재하지 않음 → 예외 (CLUSTER_NOT_FOUND)")
     void updateCluster_notFound_throwsException() {
         Long clusterId = 999L;
         when(clusterRepository.findById(clusterId)).thenReturn(Optional.empty());
@@ -341,13 +341,13 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 clusterService.updateCluster(clusterId, dto));
 
-        System.out.println("⚠️ TC_04_02 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_CL_04_02 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("CLUSTER_NOT_FOUND", ex.getErrorCode().name());
     }
 
-    // ⚠️ TC_04_03: 권한이 없는 사용자 → 예외 (ACCESS_DENIED)
+    // ⚠️ TC_CL_04_03: 권한이 없는 사용자 → 예외 (ACCESS_DENIED)
     @Test
-    @DisplayName("TC_04_03: 권한이 없는 사용자 → 예외 (ACCESS_DENIED)")
+    @DisplayName("TC_CL_04_03: 권한이 없는 사용자 → 예외 (ACCESS_DENIED)")
     void updateCluster_wrongOrgUser_throwsAccessDenied() {
         Long clusterId = 1L;
 
@@ -363,13 +363,13 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 clusterService.updateCluster(clusterId, dto));
 
-        System.out.println("⚠️ TC_04_03 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_CL_04_03 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("ACCESS_DENIED", ex.getErrorCode().name());
     }
 
-    // ⚠️ TC_04_04: name 중복 → 예외 (DUPLICATED_CLUSTER_NAME)
+    // ⚠️ TC_CL_04_04: name 중복 → 예외 (DUPLICATED_CLUSTER_NAME)
     @Test
-    @DisplayName("TC_04_04: name 중복 → 예외 (DUPLICATED_CLUSTER_NAME)")
+    @DisplayName("TC_CL_04_04: name 중복 → 예외 (DUPLICATED_CLUSTER_NAME)")
     void updateCluster_duplicateName_throwsException() {
         Long clusterId = 1L;
         Long orgId = 1L;
@@ -390,13 +390,13 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 clusterService.updateCluster(clusterId, dto));
 
-        System.out.println("⚠️ TC_04_04 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_CL_04_04 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("DUPLICATED_CLUSTER_NAME", ex.getErrorCode().name());
     }
 
-    // ✅ TC_04_05: API 서버 URL 중복 → 예외 (CLUSTER_APISERVER_DUPLICATE)
+    // ✅ TC_CL_04_05: API 서버 URL 중복 → 예외 (CLUSTER_APISERVER_DUPLICATE)
     @Test
-    @DisplayName("TC_04_05: API 서버 URL 중복 → 예외 (CLUSTER_APISERVER_DUPLICATE)")
+    @DisplayName("TC_CL_04_05: API 서버 URL 중복 → 예외 (CLUSTER_APISERVER_DUPLICATE)")
     void updateCluster_duplicateApiServer_throwsException() {
         Long clusterId = 1L;
         Long orgId = 1L;
@@ -428,13 +428,13 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 clusterService.updateCluster(clusterId, dto));
 
-        System.out.println("⚠️ TC_04_05 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_CL_04_05 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("CLUSTER_APISERVER_DUPLICATE", ex.getErrorCode().name());
     }
 
-    // ✅ TC_04_06: 변경된 필드 없음 → 예외 (CLUSTER_UPDATE_NO_CHANGE)
+    // ✅ TC_CL_04_06: 변경된 필드 없음 → 예외 (CLUSTER_UPDATE_NO_CHANGE)
     @Test
-    @DisplayName("TC_04_06: 변경된 필드 없음 → 예외 (CLUSTER_UPDATE_NO_CHANGE)")
+    @DisplayName("TC_CL_04_06: 변경된 필드 없음 → 예외 (CLUSTER_UPDATE_NO_CHANGE)")
     void updateCluster_noChange_throwsException() {
         Long clusterId = 1L;
         Long orgId = 1L;
@@ -465,14 +465,14 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 clusterService.updateCluster(clusterId, dto));
 
-        System.out.println("⚠️ TC_04_06 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_CL_04_06 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("CLUSTER_UPDATE_NO_CHANGE", ex.getErrorCode().name());
     }
 
 
-    // ✅ TC_05_01: 존재하고 권한 맞을 경우 → 성공
+    // ✅ TC_CL_05_01: 존재하고 권한 맞을 경우 → 성공
     @Test
-    @DisplayName("TC_05_01: 존재하고 권한 맞을 경우 → 성공")
+    @DisplayName("TC_CL_05_01: 존재하고 권한 맞을 경우 → 성공")
     void deleteCluster_success() {
         Long clusterId = 1L;
         Long orgId = 1L;
@@ -488,13 +488,13 @@ class ClusterServiceTest {
         clusterService.delete(clusterId);
 
         // then
-        System.out.println("✅ TC_05_01 - 클러스터 삭제 성공: " + cluster.getName());
+        System.out.println("✅ TC_CL_05_01 - 클러스터 삭제 성공: " + cluster.getName());
         verify(clusterRepository, times(1)).deleteById(clusterId);
     }
 
-    // ⚠️ TC_05_02: 클러스터 없음 → 예외 (CLUSTER_NOT_FOUND)
+    // ⚠️ TC_CL_05_02: 클러스터 없음 → 예외 (CLUSTER_NOT_FOUND)
     @Test
-    @DisplayName("TC_05_02: 클러스터 없음 → 예외 (CLUSTER_NOT_FOUND)")
+    @DisplayName("TC_CL_05_02: 클러스터 없음 → 예외 (CLUSTER_NOT_FOUND)")
     void deleteCluster_notFound_throwsException() {
         Long clusterId = 999L;
         when(clusterRepository.findById(clusterId)).thenReturn(Optional.empty());
@@ -502,13 +502,13 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 clusterService.delete(clusterId));
 
-        System.out.println("⚠️ TC_05_02 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_CL_05_02 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("CLUSTER_NOT_FOUND", ex.getErrorCode().name());
     }
 
-    // ⚠️ TC_05_03: 권한 없음 → 예외 (ACCESS_DENIED)
+    // ⚠️ TC_CL_05_03: 권한 없음 → 예외 (ACCESS_DENIED)
     @Test
-    @DisplayName("TC_05_03: 권한 없음 → 예외 (ACCESS_DENIED)")
+    @DisplayName("TC_CL_05_03: 권한 없음 → 예외 (ACCESS_DENIED)")
     void deleteCluster_accessDenied_throwsException() {
         Long clusterId = 1L;
 
@@ -522,7 +522,7 @@ class ClusterServiceTest {
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 clusterService.delete(clusterId));
 
-        System.out.println("⚠️ TC_05_03 - 발생한 예외 코드: " + ex.getErrorCode());
+        System.out.println("⚠️ TC_CL_05_03 - 발생한 예외 코드: " + ex.getErrorCode());
         assertEquals("ACCESS_DENIED", ex.getErrorCode().name());
     }
 
