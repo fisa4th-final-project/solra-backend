@@ -24,7 +24,7 @@ public class OrganizationController {
     private final OrganizationService organizationService;
 
     @PostMapping
-    @PreAuthorize("@permissionService.checkPermission('ORGANIZATION_CREATE')")
+    @PreAuthorize("@permissionService.checkPermission('ORG_CREATE')")
     public ResponseEntity<ApiResponse<OrganizationResponseDto>> createOrganization(
             @RequestBody OrganizationRequestDto requestDto
     ) {
@@ -38,7 +38,7 @@ public class OrganizationController {
 
     // 전체 조회
     @GetMapping
-    @PreAuthorize("@permissionService.checkPermission('ORGANIZATION_READ')")
+    @PreAuthorize("@permissionService.checkPermission('ORG_READ')")
     public ResponseEntity<ApiResponse<List<OrganizationResponseDto>>> getAllOrganizations() {
         List<OrganizationResponseDto> list = organizationService.getAllOrganizations();
         return ResponseEntity.ok(ApiResponse.success(list, "조직 목록 조회 성공")
@@ -47,6 +47,7 @@ public class OrganizationController {
 
     // 단일 조직 조회
     @GetMapping("/{orgId}")
+    @PreAuthorize("@permissionService.checkPermission('ORG_READ')")
     public ResponseEntity<ApiResponse<OrganizationResponseDto>> getOrganization(
             @PathVariable Long orgId) {
         OrganizationResponseDto dto = organizationService.getOrganizationById(orgId);
@@ -55,6 +56,7 @@ public class OrganizationController {
     }
     // 조직명 수정
     @PatchMapping("/{orgId}")
+    @PreAuthorize("@permissionService.checkPermission('ORG_UPDATE')")
     public ResponseEntity<ApiResponse<OrganizationResponseDto>> updateOrganization(
             @PathVariable Long orgId,
             @RequestBody OrganizationRequestDto requestDto) {
@@ -65,6 +67,7 @@ public class OrganizationController {
 
     // 조직 삭제
     @DeleteMapping("/{orgId}")
+    @PreAuthorize("@permissionService.checkPermission('ORG_DELETE')")
     public ResponseEntity<ApiResponse<Void>> deleteOrganization(
             @PathVariable Long orgId) {
         organizationService.deleteOrganization(orgId);

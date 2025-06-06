@@ -35,6 +35,7 @@ public class UserController {
     }
 
     // 사용자 정보 수정
+    @PreAuthorize("@permissionService.checkPermission('USER_UPDATE')")
     @PatchMapping("/{userId}")
     public ApiResponse<UserResponseDto> updateUser(
             @PathVariable Long userId,
@@ -46,6 +47,7 @@ public class UserController {
     }
 
     // 사용자 삭제
+    @PreAuthorize("@permissionService.checkPermission('USER_DELETE')")
     @DeleteMapping("/{userId}")
     public ApiResponse<String> deleteUser(@PathVariable Long userId){
         userService.deleteUser(userId);
