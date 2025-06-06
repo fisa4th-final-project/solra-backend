@@ -2,6 +2,8 @@ package com.fisa.solra.domain.user.dto;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,4 +19,5 @@ public class UserResponseDto {
     private String departmentName;
     private Long organizationId;
     private String organizationName;
+    private List<String> permNames;
 }

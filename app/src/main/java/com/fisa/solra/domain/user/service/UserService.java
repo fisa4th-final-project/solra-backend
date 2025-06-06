@@ -4,6 +4,8 @@ import com.fisa.solra.domain.department.entity.Department;
 import com.fisa.solra.domain.department.repository.DepartmentRepository;
 import com.fisa.solra.domain.organization.entity.Organization;
 import com.fisa.solra.domain.organization.repository.OrganizationRepository;
+import com.fisa.solra.domain.permission.entity.Permission;
+import com.fisa.solra.domain.permission.repository.PermissionRepository;
 import com.fisa.solra.domain.permission.service.PermissionService;
 import com.fisa.solra.domain.user.dto.UserCreateRequestDto;
 import com.fisa.solra.domain.user.dto.UserLoginInfo;
@@ -32,6 +34,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final OrganizationRepository organizationRepository;
     private final DepartmentRepository departmentRepository;
+    private final PermissionRepository permissionRepository;
     private final PasswordEncoder passwordEncoder;
     private final PermissionService permissionService;
 
@@ -102,11 +105,14 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        List<String> permNames = permissionRepository.findAllPermissionNamesByUserId(userId);
+
         return UserResponseDto.builder()
                 .userId(user.getUserId())
                 .userLoginId(user.getUserLoginId())
                 .userName(user.getUserName())
                 .email(user.getEmail())
+                .permNames(permNames)
                 .organizationId(user.getOrganization() != null ? user.getOrganization().getOrgId() : null)
                 .organizationName(user.getOrganization() != null ? user.getOrganization().getOrgName() : null)
                 .departmentId(user.getDepartment() != null ? user.getDepartment().getDeptId() : null)
