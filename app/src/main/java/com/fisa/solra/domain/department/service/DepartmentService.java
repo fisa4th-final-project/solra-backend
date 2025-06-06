@@ -29,7 +29,7 @@ public class DepartmentService {
     // 전체 부서 조회
     public List<DepartmentResponseDto> getAllDepartments(Long orgId) {
         // 1) 권한 검사
-        permissionService.checkPermission("DEPARTMENT_READ");
+        permissionService.checkPermission("DEPT_READ");
 
         // 2) 조직 필터 유무에 따라 조회
         List<Department> departments = (orgId != null)
@@ -55,7 +55,7 @@ public class DepartmentService {
     // 단일 부서 조회
     public DepartmentResponseDto getDepartmentById(Long deptId) {
         // 1) 권한 검사
-        permissionService.checkPermission("DEPARTMENT_READ");
+        permissionService.checkPermission("DEPT_READ");
 
         // 2) 부서 조회
         Department dept = departmentRepository.findById(deptId)
@@ -83,7 +83,7 @@ public class DepartmentService {
         String name = requestDto.getDeptName();
 
         // 1) 권한 검사
-        permissionService.checkPermission("DEPARTMENT_CREATE");
+        permissionService.checkPermission("DEPT_CREATE");
 
         // 2) 조직 존재 여부 확인
         if (orgId == null || !organizationRepository.existsById(orgId)) {
@@ -128,7 +128,7 @@ public class DepartmentService {
     @Transactional
     public DepartmentResponseDto updateDepartmentName(Long deptId, DepartmentRequestDto requestDto) {
         // 1) 권한 검사
-        permissionService.checkPermission("DEPARTMENT_UPDATE");
+        permissionService.checkPermission("DEPT_UPDATE");
 
         // 2) 부서 조회
         Department dept = departmentRepository.findById(deptId)
@@ -169,7 +169,7 @@ public class DepartmentService {
     @Transactional
     public void deleteDepartment(Long deptId) {
         // 1) 권한 검사
-        permissionService.checkPermission("DEPARTMENT_DELETE");
+        permissionService.checkPermission("DEPT_DELETE");
 
         // 2) 부서 조회
         Department dept = departmentRepository.findById(deptId)
