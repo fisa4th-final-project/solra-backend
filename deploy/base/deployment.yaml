@@ -2,7 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: solra-backend
-
+  labels:
+    app: solra-backend
+    kube-monkey/enabled: "true"
+    kube-monkey/identifier: "solra-backend"
+    kube-monkey/mtbf: "1"
+    kube-monkey/kill-mode: "fixed"
+    kube-monkey/kill-value: "1"
 spec:
   replicas: 2
   selector:
