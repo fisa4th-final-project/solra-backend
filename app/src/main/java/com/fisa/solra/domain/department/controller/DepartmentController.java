@@ -7,6 +7,7 @@ import com.fisa.solra.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class DepartmentController {
     private final DepartmentService departmentService;
 
     // 전체 부서 조회
+    @PreAuthorize("@permissionService.checkPermission('DEPT_READ')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<DepartmentResponseDto>>> getDepartments(
             @RequestParam(required = false) Long orgId
@@ -27,6 +29,7 @@ public class DepartmentController {
     }
 
     // 단일 부서 조회
+    @PreAuthorize("@permissionService.checkPermission('DEPT_READ')")
     @GetMapping("/{deptId}")
     public ResponseEntity<ApiResponse<DepartmentResponseDto>> getDepartment(
             @PathVariable Long deptId) {
@@ -35,6 +38,7 @@ public class DepartmentController {
     }
 
     // 부서 생성
+    @PreAuthorize("@permissionService.checkPermission('DEPT_CREATE')")
     @PostMapping
     public ResponseEntity<ApiResponse<DepartmentResponseDto>> createDepartment(
             @RequestBody DepartmentRequestDto requestDto) {
@@ -45,6 +49,7 @@ public class DepartmentController {
     }
 
     // 부서명 수정
+    @PreAuthorize("@permissionService.checkPermission('DEPT_UPDATE')")
     @PatchMapping("/{deptId}")
     public ResponseEntity<ApiResponse<DepartmentResponseDto>> updateDepartment(
             @PathVariable Long deptId,
@@ -54,6 +59,7 @@ public class DepartmentController {
     }
 
     // 부서 삭제
+    @PreAuthorize("@permissionService.checkPermission('DEPT_DELETE')")
     @DeleteMapping("/{deptId}")
     public ResponseEntity<ApiResponse<Void>> deleteDepartment(
             @PathVariable Long deptId) {
