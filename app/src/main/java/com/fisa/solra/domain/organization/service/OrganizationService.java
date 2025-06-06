@@ -74,7 +74,7 @@ public class OrganizationService {
     //조직 상세 조회
     public OrganizationResponseDto getOrganizationById(Long id) {
         // 1) 권한 검사 (예외 기반)
-        permissionService.checkPermission("ORGANIZATION_READ");
+        permissionService.checkPermission("ORG_READ");
 
         // 2) 대상 조직 조회
         Organization organization  = organizationRepository.findById(id)
@@ -96,7 +96,7 @@ public class OrganizationService {
     @Transactional
     public OrganizationResponseDto updateOrganizationName(Long orgId, String newName) {
         // 1) 권한 검사
-        permissionService.checkPermission("ORGANIZATION_UPDATE");
+        permissionService.checkPermission("ORG_UPDATE");
 
         // 2) 조직 조회
         Organization organization = organizationRepository.findById(orgId)
@@ -121,7 +121,7 @@ public class OrganizationService {
     @Transactional
     public void deleteOrganization(Long orgId) {
         // 1) 권한 검사
-        permissionService.checkPermission("ORGANIZATION_DELETE");
+        permissionService.checkPermission("ORG_DELETE");
 
         // 2) 조직 조회
         Organization organization = organizationRepository.findById(orgId)
