@@ -5,7 +5,7 @@ metadata:
   labels:
     app: solra-backend
     kube-monkey/enabled: "true"
-    kube-monkey/identifier: "solra-backend-1"
+    kube-monkey/identifier: "solra-backend-force-20240606"
     kube-monkey/mtbf: "1"
     kube-monkey/kill-mode: "fixed"
     kube-monkey/kill-value: "1"
@@ -19,7 +19,7 @@ spec:
       labels:
         app: solra-backend
         kube-monkey/enabled: "true"
-        kube-monkey/identifier: "solra-backend-1"
+        kube-monkey/identifier: solra-backend-force-20240606"
         kube-monkey/mtbf: "1"
         kube-monkey/kill-mode: "fixed"
         kube-monkey/kill-value: "1"
