@@ -29,6 +29,7 @@ public class KubernetesClientProvider {
             ClusterRequestDto dto = ClusterRequestDto.fromEntity(cluster);
             return k8sConfig.buildClient(dto);
         } catch (Exception e) {
+            evictClient(clusterId);
             throw new BusinessException(ErrorCode.CLUSTER_CONNECTION_FAILED);
         }
     }
