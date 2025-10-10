@@ -18,9 +18,7 @@ public class SecurityUtil {
         return (UserPrincipal) authentication.getPrincipal();
     }
 
-    public static Long getCurrentUserId() {
-        return getCurrentUserPrincipal().getUserId();
-    }
+    public static Long getUserId() {return getCurrentUserPrincipal().getUserId();}
 
     public static Long getOrgId() {
         return getCurrentUserPrincipal().getOrgId();

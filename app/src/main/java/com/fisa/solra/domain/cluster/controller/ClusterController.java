@@ -24,7 +24,7 @@ public class ClusterController {
 
     // ✅ 전체 조회
     @GetMapping
-    @PreAuthorize("@permissionService.checkPermission('CLUSTER_READ')")
+    @PreAuthorize("hasAnyAuthority('CLUSTER_CREATE')")
     public ResponseEntity<ApiResponse<List<ClusterResponseDto>>> list(
             @RequestParam(required = false) Long orgId
     ) {
@@ -42,7 +42,7 @@ public class ClusterController {
 
     // ✅ 클러스터 등록
     @PostMapping
-    @PreAuthorize("@permissionService.checkPermission('CLUSTER_CREATE')")
+    @PreAuthorize("hasAnyAuthority('CLUSTER_CREATE')")
     public ResponseEntity<ApiResponse<ClusterResponseDto>> createCluster(
             @Valid @RequestBody ClusterRequestDto dto) {
         ClusterResponseDto created = clusterService.createCluster(dto);

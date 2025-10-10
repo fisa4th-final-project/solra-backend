@@ -11,11 +11,13 @@ import com.fisa.solra.global.exception.BusinessException;
 import com.fisa.solra.global.exception.ErrorCode;
 import com.fisa.solra.global.jwt.JwtTokenProvider;
 import com.fisa.solra.global.response.ApiResponse;
+import com.fisa.solra.global.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -65,18 +67,13 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ApiResponse<UserResponseDto> getMyInfo(HttpSession session){
-        String sessionId = session.getId();
-        String token = (String) session.getAttribute("jwtToken");
-        if(token == null){
-            throw new BusinessException(ErrorCode.UNAUTHENTICATED);
-        }
-
-        Long userId = jwtTokenProvider.getUserId(token);
-
+    @PreAuthorize("isAuthenticated()") // 로그인된 사용자만 접근 가능
+    public ApiResponse<UserResponseDto> getMyInfo() {
+        Long userId = SecurityUtil.getUserId();
         UserResponseDto userResponseDto = userService.getUserById(userId);
         return ApiResponse.success(userResponseDto, "사용자 정보 조회 성공");
     }
+
 
     // 사용자 로그아웃
     @PostMapping("/logout")
