@@ -35,8 +35,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ApiResponse<UserLoginInfo> login(
-            @RequestBody @Valid LoginRequestDto request,
-            HttpSession session
+            @RequestBody @Valid LoginRequestDto request
     ) {
         // 사용자 검증 + 로그인 정보 조회
         UserLoginInfo loginInfo = userService.login(request.getUserLoginId(), request.getPassword());
@@ -45,23 +44,24 @@ public class AuthController {
                 .map(Role::getRoleName)
                 .collect(Collectors.toList());
 
-        // JWT 생성
+        // JWT 발급
         String token = jwtTokenProvider.generateToken(
                 loginInfo.getUserId(),
                 loginInfo.getOrgId(),
                 loginInfo.getDeptId(),
                 roleNames
         );
-        // 세션에 저장
-        session.setAttribute("jwtToken", token);
 
-        // 🔥 인증 객체 등록 - 없으면 SecurityFilterChain에서 403 뜸
-        List<GrantedAuthority> authorities = permissionService.getAuthorities(loginInfo.getUserId());
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(loginInfo.getUserId(), null, authorities);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        return ApiResponse.success(loginInfo, "로그인 성공");
+        return ApiResponse.success(
+                UserLoginInfo.builder()
+                        .userId(loginInfo.getUserId())
+                        .orgId(loginInfo.getOrgId())
+                        .deptId(loginInfo.getDeptId())
+                        .roles(loginInfo.getRoles())
+                        .token(token)
+                        .build(),
+                "로그인 성공"
+        );
     }
 
     @GetMapping("/me")

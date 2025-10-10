@@ -13,4 +13,5 @@ public class UserLoginInfo {
     private Long orgId;
     private Long deptId;
     private Set<Role> roles;
+    private String token;
 }

@@ -6,8 +6,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -19,12 +19,12 @@ import java.util.List;
 @Component
 public class JwtSessionAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private JwtTokenProvider jwtProvider;
     private final PermissionService permissionService;
 
     public JwtSessionAuthenticationFilter(JwtTokenProvider jwtTokenProvider,
                                           PermissionService permissionService) {
-        this.jwtTokenProvider = jwtTokenProvider;
+        this.jwtProvider = jwtTokenProvider;
         this.permissionService = permissionService;
     }
 
@@ -34,36 +34,39 @@ public class JwtSessionAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getRequestURI();
-        if (path.startsWith("/api/auth/login")) {
-            // 로그인은 무시하고 다음 필터로 넘김
-            filterChain.doFilter(request, response);
-            return;
-        }
+        String token = resolveToken(request);
+        if (token != null && jwtProvider.validateToken(token)) {
+            // JWT → 사용자 정보 복원
+            Long userId = jwtProvider.getUserId(token);
+            Long orgId = jwtProvider.getOrgId(token);
+            Long deptId = jwtProvider.getDeptId(token);
+            List<String> roles = jwtProvider.getRoles(token);
+            List<GrantedAuthority> authorities = permissionService.getAuthorities(userId);
 
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            String token = (String) session.getAttribute("jwtToken");
+            // ✅ 모든 인자 전달
+            UserPrincipal principal = new UserPrincipal(
+                    userId,
+                    orgId,
+                    deptId,
+                    roles,
+                    authorities
+            );
 
-            // jwt 유효성 검사
-            if (token != null && jwtTokenProvider.validateToken(token)) {
-                Long userId = jwtTokenProvider.getUserId(token);
-                Long orgId = jwtTokenProvider.getOrgId(token);
-                Long deptId = jwtTokenProvider.getDeptId(token);
-                List<String> roles = jwtTokenProvider.getRoles(token);
+            // ✅ Authentication 생성
+            Authentication auth =
+                    new UsernamePasswordAuthenticationToken(principal, null, authorities);
 
-                // DB에서 권한 조회
-                List<GrantedAuthority> authorities = permissionService.getAuthorities(userId);
-
-                UserPrincipal principal = new UserPrincipal(userId, orgId, deptId, roles, authorities);
-
-                // 인증 객체 생성 및 SecurityContext에 저장
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(principal, null, authorities);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            // ✅ SecurityContextHolder 등록
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
         filterChain.doFilter(request, response);
+    }
+    private String resolveToken(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+            return bearer.substring(7);
+        }
+        return null;
     }
 }
